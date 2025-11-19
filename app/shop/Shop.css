@@ -1,0 +1,123 @@
+.shop-wrap {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem 1rem 3rem;
+}
+
+.shop-header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.25rem;
+}
+
+.shop-title {
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: 0.3px;
+}
+
+.shop-filters {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.shop-select, .shop-search {
+  border: 1px solid #e5e5e5;
+  background: #fff;
+  padding: 0.55rem 0.7rem;
+  border-radius: 10px;
+  min-width: 180px;
+}
+
+.shop-grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 1rem;
+}
+
+.product-card {
+  grid-column: span 12;
+  border: 1px solid #eee;
+  border-radius: 14px;
+  overflow: hidden;
+  background: #fff;
+  display: grid;
+  grid-template-rows: 180px auto;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.product-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+}
+
+.product-thumb {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: #fafafa;
+}
+
+.product-img {
+  object-fit: cover;
+}
+
+.product-info {
+  padding: 0.9rem 1rem 1rem;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.product-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.product-desc {
+  color: #666;
+  font-size: 0.92rem;
+  line-height: 1.35;
+  min-height: 2.4em; /* 2 regels */
+}
+
+.product-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 0.25rem;
+}
+
+.product-price {
+  font-size: 1.05rem;
+  font-weight: 800;
+}
+
+.btn-add {
+  border: 1px solid #e5c66d;
+  background: #c28b00;
+  color: #fff;
+  font-weight: 700;
+  border-radius: 10px;
+  padding: 0.5rem 0.8rem;
+  cursor: pointer;
+  transition: filter 0.15s ease;
+}
+
+.btn-add:hover {
+  filter: brightness(1.05);
+}
+
+/* 2 kolommen op >= 640px, 3 op >= 960px, 4 op >= 1200px */
+@media (min-width: 640px) {
+  .product-card { grid-column: span 6; }
+}
+@media (min-width: 960px) {
+  .product-card { grid-column: span 4; }
+}
+@media (min-width: 1200px) {
+  .product-card { grid-column: span 3; }
+}

@@ -1,0 +1,208 @@
+/* ===== HERO HEADER ===== */
+.header {
+  position: relative;
+  width: 100%;
+  height: 75vh;
+  min-height: 400px;
+  background-image: url('/headerAchtergrond.png');
+  background-size: cover;
+  background-position: top;
+  background-repeat: no-repeat;
+  overflow: hidden;
+  z-index: 0;
+}
+
+/* ===== NAVIGATIE BOVENAAN ===== */
+.header-inner {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  padding-inline: 10%;
+  padding-block: 1.5rem;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 1.5rem;
+  z-index: 3;
+}
+
+/* ===== NAV STRUCTUUR ===== */
+.nav {
+  display: flex;
+  align-items: center; /* alles verticaal centreren */
+  gap: clamp(1rem, 2vw, 2rem);
+}
+
+/* ===== NAV LINKS ===== */
+.nav-link {
+  display: flex;
+  align-items: center;
+  height: 34px; /* uniforme hoogte */
+  padding: 0 4px;
+  color: #521f0a;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  transition: color 0.2s ease;
+  line-height: 1;
+}
+
+.nav-link:hover,
+.nav-link.active {
+  color: #c28b00; /* kaasgeel accent */
+}
+
+/* ===== WINKELMANDJE ===== */
+.cart-link {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 34px; /* uniforme hoogte */
+  color: #521f0a;
+  transition: color 0.2s ease;
+  padding: 0;
+}
+
+.cart-link:hover {
+  color: #c28b00;
+}
+
+.cart-icon {
+  width: 20px;
+  height: 20px;
+}
+
+/* Teller-badge */
+.cart-count {
+  position: absolute;
+  top: -6px;
+  right: -8px;
+  background: #c28b00;
+  color: #fff;
+  font-size: 0.65rem;
+  font-weight: 700;
+  line-height: 1;
+  border-radius: 9999px;
+  padding: 2px 6px;
+  min-width: 18px;
+  text-align: center;
+  z-index: 5;
+  transform: translateY(-1px); /* optische correctie */
+}
+
+/* ===== LOGIN LINK (icoon + tekst) ===== */
+.login-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 34px; /* uniforme hoogte */
+  padding: 0 14px;
+  color: #521f0a;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+  border: 2px solid #c28b00;
+  border-radius: 4px;
+  transition: all 0.25s ease;
+  line-height: 1;
+}
+
+.login-link:hover {
+  background-color: #c28b00;
+  color: #fff;
+}
+
+.login-icon {
+  width: 18px;
+  height: 18px;
+}
+
+/* ===== LOGO GECENTREERD ===== */
+.header-logo-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 2;
+}
+
+.logo-wrapper {
+  position: relative;
+  width: clamp(330px, 37.5vw, 570px);
+  aspect-ratio: 3 / 1;
+}
+
+.logo-img {
+  object-fit: contain;
+  filter: drop-shadow(0 0 3px #fff) drop-shadow(0 0 6px #fff);
+}
+
+/* ===== INFOBALK (ZWART) ===== */
+.info-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: #000;
+  color: #fff;
+  padding: 14px 10%;
+  text-align: center;
+  font-weight: 500;
+  font-size: 1rem;
+  letter-spacing: 0.5px;
+  z-index: 4;
+}
+
+.info-item {
+  width: 100%;
+}
+
+.login-link--initials {
+  padding: 0;
+}
+
+.login-initials {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 9999px;
+  border: 1px solid #521f0a;
+  color: #521f0a;
+  font-weight: 700;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  background: #fffef8;
+}
+
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+  .header-inner {
+    padding-inline: 5%;
+    justify-content: center;
+    gap: 1rem;
+  }
+
+  .nav {
+    gap: 1rem;
+  }
+
+  .logo-wrapper {
+    width: 220px;
+  }
+
+  .info-bar {
+    font-size: 0.9rem;
+    padding: 10px 5%;
+  }
+
+  .login-link {
+    font-size: 0.8rem;
+    padding: 0 10px;
+  }
+}
