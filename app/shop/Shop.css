@@ -1,8 +1,12 @@
-.shop-wrap {
+/* ===== SHOP PAGINA BASIS ===== */
+
+.shop-page {
   max-width: 1200px;
   margin: 0 auto;
   padding: 2rem 1rem 3rem;
 }
+
+/* Header bovenaan de shop */
 
 .shop-header {
   display: flex;
@@ -17,20 +21,24 @@
   font-size: 2rem;
   font-weight: 800;
   letter-spacing: 0.3px;
+  color: #521f0a;
 }
 
-.shop-filters {
-  display: flex;
-  gap: 0.75rem;
-  align-items: center;
+.shop-subtitle {
+  font-size: 0.98rem;
+  color: #5c4940;
 }
 
-.shop-select, .shop-search {
-  border: 1px solid #e5e5e5;
-  background: #fff;
-  padding: 0.55rem 0.7rem;
-  border-radius: 10px;
-  min-width: 180px;
+/* ===== PRODUCT GRID ===== */
+
+.shop-grid-section {
+  margin-top: 1rem;
+}
+
+.shop-empty {
+  text-align: center;
+  color: #7a6b63;
+  padding: 2rem 0;
 }
 
 .shop-grid {
@@ -39,8 +47,35 @@
   gap: 1rem;
 }
 
-.product-card {
+/* Het grid-item rondom de kaart + admin-knoppen */
+.shop-item-with-admin {
   grid-column: span 12;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+/* 2 kolommen op >= 640px, 3 op >= 960px, 4 op >= 1200px */
+@media (min-width: 640px) {
+  .shop-item-with-admin {
+    grid-column: span 6;
+  }
+}
+@media (min-width: 960px) {
+  .shop-item-with-admin {
+    grid-column: span 4;
+  }
+}
+@media (min-width: 1200px) {
+  .shop-item-with-admin {
+    grid-column: span 3;
+  }
+}
+
+/* ===== PRODUCT CARD STYLING ===== */
+/* Deze classes grijpen de kaartjes zelf (ProductCard) */
+
+.product-card {
   border: 1px solid #eee;
   border-radius: 14px;
   overflow: hidden;
@@ -52,7 +87,7 @@
 
 .product-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
 }
 
 .product-thumb {
@@ -75,13 +110,14 @@
 .product-title {
   font-size: 1.05rem;
   font-weight: 700;
+  color: #521f0a;
 }
 
 .product-desc {
   color: #666;
   font-size: 0.92rem;
   line-height: 1.35;
-  min-height: 2.4em; /* 2 regels */
+  min-height: 2.4em; /* ~2 regels */
 }
 
 .product-meta {
@@ -94,6 +130,7 @@
 .product-price {
   font-size: 1.05rem;
   font-weight: 800;
+  color: #521f0a;
 }
 
 .btn-add {
@@ -111,13 +148,185 @@
   filter: brightness(1.05);
 }
 
-/* 2 kolommen op >= 640px, 3 op >= 960px, 4 op >= 1200px */
-@media (min-width: 640px) {
-  .product-card { grid-column: span 6; }
+/* ===== ADMIN KNOPPEN ONDER DE KAART ===== */
+
+.shop-item-admin-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
 }
-@media (min-width: 960px) {
-  .product-card { grid-column: span 4; }
+
+.shop-admin-btn {
+  font-size: 0.8rem;
+  padding: 0.3rem 0.7rem;
+  border-radius: 999px;
+  border: 1px solid #c8beb1;
+  background: #fff;
+  color: #5c4940;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    border-color 0.15s ease;
 }
-@media (min-width: 1200px) {
-  .product-card { grid-column: span 3; }
+
+.shop-admin-btn:hover {
+  background: #f4ede2;
+  border-color: #b5a697;
+}
+
+.shop-admin-btn--danger {
+  border-color: #b00020;
+  background: #b00020;
+  color: #fff;
+}
+
+.shop-admin-btn--danger:hover {
+  background: #8a0018;
+  border-color: #8a0018;
+}
+
+/* ===== ADMIN PANEEL ONDER SHOP ===== */
+
+.shop-admin-panel {
+  margin-top: 3rem;
+  padding: 1.25rem 1rem 1.5rem;
+  border-radius: 14px;
+  border: 1px solid #e6e1d8;
+  background: #fffef8;
+}
+
+.shop-admin-title {
+  margin: 0 0 0.75rem 0;
+  color: #521f0a;
+  font-size: 1.2rem;
+  letter-spacing: 0.02em;
+}
+
+/* Foutmeldingen voor admin-blok */
+
+.shop-admin-error {
+  margin-bottom: 0.75rem;
+  padding: 0.5rem 0.8rem;
+  border-radius: 10px;
+  border: 1px solid rgba(176, 0, 32, 0.25);
+  background: rgba(176, 0, 32, 0.06);
+  color: #b00020;
+  font-size: 0.9rem;
+}
+
+/* ===== ADMIN FORMULIEREN (bewerken + toevoegen) ===== */
+
+.shop-admin-form {
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid #e6e1d8;
+}
+
+.shop-admin-form h3 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1rem;
+  color: #521f0a;
+}
+
+.shop-admin-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+/* Volle breedte items binnen het grid */
+
+.shop-admin-form-full {
+  grid-column: 1 / -1;
+}
+
+.shop-admin-form label {
+  display: block;
+  font-size: 0.85rem;
+  color: #5c4940;
+  margin-bottom: 0.25rem;
+}
+
+/* Inputs / textarea / select */
+
+.shop-admin-form input,
+.shop-admin-form select,
+.shop-admin-form textarea {
+  width: 100%;
+  padding: 0.45rem 0.6rem;
+  border-radius: 8px;
+  border: 1px solid #ddd3c5;
+  font-size: 0.9rem;
+  outline: none;
+  background: #fff;
+}
+
+.shop-admin-form textarea {
+  resize: vertical;
+  min-height: 60px;
+}
+
+.shop-admin-form input:focus,
+.shop-admin-form select:focus,
+.shop-admin-form textarea:focus {
+  border-color: #c28b00;
+  box-shadow: 0 0 0 1px rgba(194, 139, 0, 0.3);
+}
+
+/* Acties onderaan formulier */
+
+.shop-admin-form-actions {
+  margin-top: 0.75rem;
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+}
+
+.shop-admin-form-actions button {
+  padding: 0.45rem 1rem;
+  border-radius: 999px;
+  border: none;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.shop-admin-form-actions button:first-of-type {
+  background: #c28b00;
+  color: #fff;
+}
+
+.shop-admin-form-actions button:first-of-type:hover {
+  background: #a87600;
+}
+
+.shop-admin-form-actions button:last-of-type {
+  background: #fff;
+  border: 1px solid #c8beb1;
+  color: #5c4940;
+}
+
+.shop-admin-form-actions button:last-of-type:hover {
+  background: #f4ede2;
+}
+
+/* Checkbox in admin-formulier */
+
+.shop-admin-form input[type="checkbox"] {
+  width: auto;
+  margin-right: 0.35rem;
+  box-shadow: none;
+}
+
+/* ===== RESPONSIVE ADMIN GRID ===== */
+
+@media (max-width: 768px) {
+  .shop-page {
+    padding: 1.5rem 1rem 2.5rem;
+  }
+
+  .shop-admin-form-grid {
+    grid-template-columns: 1fr;
+  }
 }

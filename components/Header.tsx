@@ -24,7 +24,6 @@ export default function Header() {
   const voornaam = userAny?.voornaam as string | undefined;
   const achternaam = userAny?.achternaam as string | undefined;
   const email = session?.user?.email || '';
-  const isAdmin = !!userAny?.isAdmin;
 
   const initialsRaw =
     (voornaam?.[0] ?? '') +
@@ -49,16 +48,6 @@ export default function Header() {
               {label}
             </Link>
           ))}
-
-          {/* Admin-link alleen voor admins */}
-          {isAdmin && (
-            <Link
-              href="/admin/beheren"
-              className={`nav-link ${pathname.startsWith('/admin/beheren') ? 'active' : ''}`}
-            >
-              Kazen beheren
-            </Link>
-          )}
 
           {/* Winkelmandje */}
           <Link href="/winkelmand" className="cart-link" aria-label="Winkelmandje">
@@ -88,7 +77,7 @@ export default function Header() {
         </nav>
       </div>
 
-      {/* Logo gecentreerd */}
+      {/* Logo gecentreerd over de header-afbeelding */}
       <div className="header-logo-center">
         <div className="logo-wrapper">
           <Image
