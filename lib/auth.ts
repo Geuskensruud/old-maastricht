@@ -9,7 +9,7 @@ type UserRow = {
   passwordHash: string;
   voornaam: string | null;
   achternaam: string | null;
-  isAdmin: number; // 0 of 1
+  isAdmin: boolean;
 };
 
 export const authOptions: NextAuthOptions = {
@@ -24,29 +24,44 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
-          throw new Error('Vul zowel e-mail als wachtwoord in.');
+          return null;
         }
 
-        const stmt = db.prepare(
-          'SELECT id, email, passwordHash, voornaam, achternaam, isAdmin FROM users WHERE email = ?'
+        const result = await db.query<UserRow>(
+          `
+          SELECT
+            id,
+            email,
+            password_hash AS "passwordHash",
+            voornaam,
+            achternaam,
+            is_admin AS "isAdmin"
+          FROM users
+          WHERE email = $1
+          LIMIT 1
+        `,
+          [credentials.email]
         );
-        const user = stmt.get(credentials.email) as UserRow | undefined;
 
+        const user = result.rows[0];
         if (!user) {
-          throw new Error('Onjuiste e-mail of wachtwoord.');
+          // geen gebruiker gevonden
+          return null;
         }
 
         const ok = await bcrypt.compare(credentials.password, user.passwordHash);
         if (!ok) {
-          throw new Error('Onjuiste e-mail of wachtwoord.');
+          // wachtwoord klopt niet
+          return null;
         }
 
+        // geldige login
         return {
           id: user.id,
           email: user.email,
           voornaam: user.voornaam,
           achternaam: user.achternaam,
-          isAdmin: !!user.isAdmin,
+          isAdmin: user.isAdmin,
         } as any;
       },
     }),

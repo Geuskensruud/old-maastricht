@@ -16,13 +16,13 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
-  const validEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-  const validPw = wachtwoord.length >= 6;
-  const formValid = validEmail && validPw;
+  // Alleen checken op "niet leeg"
+  const formGeldig = email.trim() !== '' && wachtwoord.trim() !== '';
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
-    if (!formValid) return;
+    if (!formGeldig) return;
+
     setLoading(true);
     setErr(null);
 
@@ -35,8 +35,8 @@ export default function LoginPage() {
 
     setLoading(false);
 
-    if (res?.error) {
-      setErr(res.error || 'Inloggen mislukt');
+    if (!res || res.error) {
+      setErr('Foute e-mail / wachtwoord combinatie. Probeer het opnieuw.');
       return;
     }
 
@@ -58,7 +58,6 @@ export default function LoginPage() {
               autoComplete="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              aria-invalid={email.length > 0 && !validEmail}
               required
             />
           </div>
@@ -72,7 +71,6 @@ export default function LoginPage() {
                 autoComplete="current-password"
                 value={wachtwoord}
                 onChange={(e) => setWachtwoord(e.target.value)}
-                aria-invalid={wachtwoord.length > 0 && !validPw}
                 required
               />
               <button
@@ -94,7 +92,7 @@ export default function LoginPage() {
           <button
             className="btn-submit"
             type="submit"
-            disabled={!formValid || loading}
+            disabled={!formGeldig || loading}
           >
             {loading ? 'Bezig…' : 'Inloggen'}
           </button>

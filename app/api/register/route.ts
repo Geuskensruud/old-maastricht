@@ -62,8 +62,13 @@ export async function POST(req: Request) {
       );
     }
 
-    const existing = db.prepare('SELECT id FROM users WHERE email = ?').get(email);
-    if (existing) {
+    // Bestaat al?
+    const existing = await db.query<{ id: string }>(
+      'SELECT id FROM users WHERE email = $1 LIMIT 1',
+      [email]
+    );
+
+    if (existing.rowCount && existing.rowCount > 0) {
       return NextResponse.json(
         { error: 'Er bestaat al een account met dit e-mailadres.' },
         { status: 409 }
@@ -73,11 +78,12 @@ export async function POST(req: Request) {
     const passwordHash = await bcrypt.hash(wachtwoord, 12);
     const id = randomUUID();
 
-    const stmt = db.prepare(`
+    await db.query(
+      `
       INSERT INTO users (
         id,
         email,
-        passwordHash,
+        password_hash,
         voornaam,
         achternaam,
         bedrijfsnaam,
@@ -86,25 +92,24 @@ export async function POST(req: Request) {
         postcode,
         plaats,
         land,
-        isAdmin,
-        createdAt
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `);
-
-    stmt.run(
-      id,
-      email,
-      passwordHash,
-      voornaam,
-      achternaam,
-      bedrijfsnaam ?? null,
-      telefoon,
-      straat,
-      postcode,
-      plaats,
-      land,
-      0, // ⬅️ normale users zijn GEEN admin
-      new Date().toISOString()
+        is_admin,
+        created_at
+      )
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, FALSE, NOW())
+    `,
+      [
+        id,
+        email,
+        passwordHash,
+        voornaam,
+        achternaam,
+        bedrijfsnaam ?? null,
+        telefoon,
+        straat,
+        postcode,
+        plaats,
+        land,
+      ]
     );
 
     return NextResponse.json({ ok: true });

@@ -26,20 +26,21 @@ export default function RegisterPage() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
-  const emailGeldig = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-  const pwGeldig = wachtwoord.length >= 6;
-  const pwMatch = wachtwoord === wachtwoord2;
-
+  // Alleen checken op "iets ingevuld" + wachtwoorden gelijk
   const alleVerplichteVeldenGevuld =
+    email.trim() !== '' &&
+    wachtwoord.trim() !== '' &&
+    wachtwoord2.trim() !== '' &&
     voornaam.trim() !== '' &&
     achternaam.trim() !== '' &&
     telefoon.trim() !== '' &&
     straat.trim() !== '' &&
     postcode.trim() !== '' &&
     plaats.trim() !== '' &&
-    land !== '';
+    land !== '' &&
+    wachtwoord === wachtwoord2;
 
-  const formGeldig = emailGeldig && pwGeldig && pwMatch && alleVerplichteVeldenGevuld;
+  const formGeldig = alleVerplichteVeldenGevuld;
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -100,6 +101,7 @@ export default function RegisterPage() {
           {/* Inloggegevens */}
           <div className="form-section">
             <h2 className="section-title">Inloggegevens</h2>
+
             <div className="form-row">
               <label htmlFor="email">E-mail *</label>
               <input
@@ -109,15 +111,11 @@ export default function RegisterPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                aria-invalid={email.length > 0 && !emailGeldig}
               />
-              {email.length > 0 && !emailGeldig && (
-                <small className="field-error">Voer een geldig e-mailadres in.</small>
-              )}
             </div>
 
             <div className="form-row">
-              <label htmlFor="wachtwoord">Wachtwoord (min. 6 tekens) *</label>
+              <label htmlFor="wachtwoord">Wachtwoord *</label>
               <input
                 id="wachtwoord"
                 type="password"
@@ -125,11 +123,7 @@ export default function RegisterPage() {
                 value={wachtwoord}
                 onChange={(e) => setWachtwoord(e.target.value)}
                 required
-                aria-invalid={wachtwoord.length > 0 && !pwGeldig}
               />
-              {wachtwoord.length > 0 && !pwGeldig && (
-                <small className="field-error">Wachtwoord moet minimaal 6 tekens bevatten.</small>
-              )}
             </div>
 
             <div className="form-row">
@@ -141,15 +135,11 @@ export default function RegisterPage() {
                 value={wachtwoord2}
                 onChange={(e) => setWachtwoord2(e.target.value)}
                 required
-                aria-invalid={wachtwoord2.length > 0 && !pwMatch}
               />
-              {wachtwoord2.length > 0 && !pwMatch && (
-                <small className="field-error">Wachtwoorden komen niet overeen.</small>
-              )}
             </div>
           </div>
 
-          {/* Verplichte gegevens */}
+          {/* Gegevens */}
           <div className="form-section">
             <h2 className="section-title">Gegevens</h2>
 
