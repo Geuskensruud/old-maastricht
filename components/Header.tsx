@@ -20,10 +20,11 @@ export default function Header() {
     { href: '/shop', label: 'Shop' },
   ];
 
-  // Initialen uit de sessie halen
-  const voornaam = (session?.user as any)?.voornaam as string | undefined;
-  const achternaam = (session?.user as any)?.achternaam as string | undefined;
+  const userAny = session?.user as any;
+  const voornaam = userAny?.voornaam as string | undefined;
+  const achternaam = userAny?.achternaam as string | undefined;
   const email = session?.user?.email || '';
+  const isAdmin = !!userAny?.isAdmin;
 
   const initialsRaw =
     (voornaam?.[0] ?? '') +
@@ -38,6 +39,7 @@ export default function Header() {
       {/* Navigatie bovenaan */}
       <div className="header-inner">
         <nav className="nav">
+          {/* Gewone links */}
           {links.map(({ href, label }) => (
             <Link
               key={href}
@@ -47,6 +49,16 @@ export default function Header() {
               {label}
             </Link>
           ))}
+
+          {/* Admin-link alleen voor admins */}
+          {isAdmin && (
+            <Link
+              href="/admin/beheren"
+              className={`nav-link ${pathname.startsWith('/admin/beheren') ? 'active' : ''}`}
+            >
+              Kazen beheren
+            </Link>
+          )}
 
           {/* Winkelmandje */}
           <Link href="/winkelmand" className="cart-link" aria-label="Winkelmandje">
