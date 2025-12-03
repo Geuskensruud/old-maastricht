@@ -1,0 +1,129 @@
+/* ===== WAAR TE KOOP / VERKOOPPUNTEN ===== */
+
+.waar-te-koop-section {
+  background: #262626;          /* donkere achtergrond zoals op screenshot */
+  padding: 4rem 0 4.5rem;
+  margin-top: 3rem;
+
+  /* truc om uit de centraliserende main (max-width) te “breken” */
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
+}
+
+.waar-te-koop-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+  color: #fff;
+  text-align: center;
+}
+
+.waar-te-koop-overtitle {
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: #c28b00;               /* goudkleurig accent */
+  margin-bottom: 0.25rem;
+}
+
+.waar-te-koop-title {
+  font-size: 2.4rem;
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+/* GRID MET KAARTEN */
+
+.waar-te-koop-grid {
+  margin-top: 2.5rem;
+  display: grid;
+  gap: 2rem;
+}
+
+/* 1 kolom mobiel, 2 op tablet, 3 op desktop */
+@media (min-width: 720px) {
+  .waar-te-koop-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .waar-te-koop-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+/* KAARTEN */
+
+.verkooppunt-card {
+  background: #ffffff;
+  color: #3a2a23;
+  border-radius: 4px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+  overflow: hidden;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+}
+
+.verkooppunt-image-wrapper {
+  width: 100%;
+  height: 260px;
+  background: #f5f5f5;
+  overflow: hidden;
+}
+
+.verkooppunt-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.verkooppunt-body {
+  padding: 1.25rem 1.5rem 1.4rem;
+}
+
+.verkooppunt-body h3 {
+  font-size: 1.1rem;
+  font-weight: 800;
+  margin-bottom: 0.35rem;
+}
+
+.verkooppunt-sub {
+  margin-bottom: 0.45rem;
+  font-size: 0.95rem;
+}
+
+.verkooppunt-label {
+  font-weight: 700;
+  font-size: 0.9rem;
+  margin-bottom: 0.2rem;
+}
+
+.verkooppunt-text {
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+/* Webshop-knop in de derde kaart */
+
+.verkooppunt-button {
+  display: inline-block;
+  margin-top: 0.9rem;
+  padding: 0.5rem 1.3rem;
+  border-radius: 4px;
+  background: #5d2410;
+  color: #fff;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 0.9rem;
+  transition: background 0.15s ease, transform 0.1s ease;
+}
+
+.verkooppunt-button:hover {
+  background: #441608;
+  transform: translateY(-1px);
+}
