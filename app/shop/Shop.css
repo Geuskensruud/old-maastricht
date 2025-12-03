@@ -43,34 +43,31 @@
 
 .shop-grid {
   display: grid;
-  grid-template-columns: repeat(12, 1fr);
   gap: 1rem;
+  grid-template-columns: 1fr; /* mobiel: 1 kaart per rij */
 }
 
-/* Het grid-item rondom de kaart + admin-knoppen */
+/* item wrapper rondom de kaart */
 .shop-item-with-admin {
-  grid-column: span 12;
   display: flex;
   flex-direction: column;
   gap: 0.4rem;
 }
 
-/* 2 kolommen op >= 640px, 3 op >= 960px, 4 op >= 1200px */
+/* vanaf 640px → 2 kolommen */
 @media (min-width: 640px) {
-  .shop-item-with-admin {
-    grid-column: span 6;
+  .shop-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
+
+/* vanaf 960px → 3 kolommen (max) */
 @media (min-width: 960px) {
-  .shop-item-with-admin {
-    grid-column: span 4;
+  .shop-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
-@media (min-width: 1200px) {
-  .shop-item-with-admin {
-    grid-column: span 3;
-  }
-}
+
 
 /* ===== PRODUCT CARD STYLING ===== */
 /* Deze classes grijpen de kaartjes zelf (ProductCard) */
@@ -329,4 +326,38 @@
   .shop-admin-form-grid {
     grid-template-columns: 1fr;
   }
+}
+
+
+/* Admin-knoppen op de product card zelf (Toevoegen / Verwijderen) */
+
+.product-admin-actions {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.product-admin-btn {
+  border-radius: 10px;
+  padding: 0.45rem 0.8rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid #e5c66d;
+  background: #c28b00;
+  color: #fff;
+  transition: filter 0.15s ease, background 0.15s ease;
+}
+
+.product-admin-btn:hover {
+  filter: brightness(1.05);
+}
+
+.product-admin-btn--secondary {
+  border-color: #c8beb1;
+  background: #fff;
+  color: #5c4940;
+}
+
+.product-admin-btn--secondary:hover {
+  background: #f4ede2;
 }

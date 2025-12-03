@@ -1,110 +1,196 @@
 'use client';
 
-import { useState, FormEvent } from 'react';
+import { FormEvent, useState } from 'react';
 import { signIn } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import './Login.css';
+import Link from 'next/link';
 
 export default function LoginPage() {
   const router = useRouter();
-  const params = useSearchParams();
-  const callbackUrl = params.get('callbackUrl') || '/';
+  const searchParams = useSearchParams();
+  const callbackUrl = searchParams.get('callbackUrl') || '/';
 
   const [email, setEmail] = useState('');
-  const [wachtwoord, setWachtwoord] = useState('');
-  const [showPw, setShowPw] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [err, setErr] = useState<string | null>(null);
+  const [password, setPassword] = useState('');
 
-  // Alleen checken op "niet leeg"
-  const formGeldig = email.trim() !== '' && wachtwoord.trim() !== '';
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
-    if (!formGeldig) return;
+    setError(null);
 
-    setLoading(true);
-    setErr(null);
-
-    const res = await signIn('credentials', {
-      redirect: false,
-      email,
-      password: wachtwoord,
-      callbackUrl,
-    });
-
-    setLoading(false);
-
-    if (!res || res.error) {
-      setErr('Foute e-mail / wachtwoord combinatie. Probeer het opnieuw.');
+    if (!email || !password) {
+      setError('Vul je e-mailadres en wachtwoord in.');
       return;
     }
 
-    router.push(callbackUrl);
+    try {
+      setLoading(true);
+
+      const result = await signIn('credentials', {
+        email,
+        password,
+        redirect: false,
+        callbackUrl,
+      });
+
+      if (!result) {
+        setError('Er ging iets mis. Probeer het later opnieuw.');
+        setLoading(false);
+        return;
+      }
+
+      if (result.error) {
+        // Foute combinatie → nette melding
+        setError('Onjuiste e-mail / wachtwoord combinatie, probeer het opnieuw.');
+        setLoading(false);
+        return;
+      }
+
+      // Succes → doorsturen
+      router.push(result.url ?? '/');
+    } catch (err) {
+      console.error('[login] error:', err);
+      setError('Er ging iets mis. Probeer het later opnieuw.');
+      setLoading(false);
+    }
   }
 
   return (
-    <main className="login-wrap">
-      <section className="login-card" aria-labelledby="loginTitle">
-        <h1 id="loginTitle" className="login-title">Login</h1>
-        <p className="login-sub">Log in om je bestellingen en gegevens te beheren.</p>
+    <main
+      style={{
+        maxWidth: 480,
+        margin: '2.5rem auto',
+        padding: '0 1rem',
+      }}
+    >
+      <h1
+        style={{
+          fontSize: '1.8rem',
+          marginBottom: '0.75rem',
+          color: '#521f0a',
+        }}
+      >
+        Inloggen
+      </h1>
 
-        <form className="login-form" onSubmit={handleSubmit} noValidate>
-          <div className="form-row">
-            <label htmlFor="email">E-mail</label>
-            <input
-              id="email"
-              type="email"
-              autoComplete="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-          </div>
+      <p
+        style={{
+          marginBottom: '1.25rem',
+          color: '#5c4940',
+          fontSize: '0.95rem',
+        }}
+      >
+        Log in om je account en bestellingen te beheren.
+      </p>
 
-          <div className="form-row">
-            <label htmlFor="wachtwoord">Wachtwoord</label>
-            <div className="pw-input">
-              <input
-                id="wachtwoord"
-                type={showPw ? 'text' : 'password'}
-                autoComplete="current-password"
-                value={wachtwoord}
-                onChange={(e) => setWachtwoord(e.target.value)}
-                required
-              />
-              <button
-                type="button"
-                className="pw-toggle"
-                onClick={() => setShowPw((s) => !s)}
-              >
-                {showPw ? 'Verberg' : 'Toon'}
-              </button>
-            </div>
-          </div>
-
-          {err && (
-            <div className="alert-error" role="alert">
-              {err}
-            </div>
-          )}
-
-          <button
-            className="btn-submit"
-            type="submit"
-            disabled={!formGeldig || loading}
+      <form onSubmit={handleSubmit}>
+        <div style={{ marginBottom: '0.75rem' }}>
+          <label
+            htmlFor="email"
+            style={{
+              display: 'block',
+              marginBottom: '0.25rem',
+              fontSize: '0.9rem',
+              color: '#5c4940',
+            }}
           >
-            {loading ? 'Bezig…' : 'Inloggen'}
-          </button>
-        </form>
+            E-mailadres
+          </label>
+          <input
+            id="email"
+            type="email"
+            autoComplete="email"
+            required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            style={{
+              width: '100%',
+              padding: '0.5rem 0.6rem',
+              borderRadius: 8,
+              border: '1px solid #ddd3c5',
+            }}
+          />
+        </div>
 
-        <p className="login-foot">
+        <div style={{ marginBottom: '0.75rem' }}>
+          <label
+            htmlFor="password"
+            style={{
+              display: 'block',
+              marginBottom: '0.25rem',
+              fontSize: '0.9rem',
+              color: '#5c4940',
+            }}
+          >
+            Wachtwoord
+          </label>
+          <input
+            id="password"
+            type="password"
+            autoComplete="current-password"
+            required
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            style={{
+              width: '100%',
+              padding: '0.5rem 0.6rem',
+              borderRadius: 8,
+              border: '1px solid #ddd3c5',
+            }}
+          />
+        </div>
+
+        {error && (
+          <p
+            style={{
+              marginBottom: '0.75rem',
+              fontSize: '0.9rem',
+              color: '#b00020',
+            }}
+          >
+            {error}
+          </p>
+        )}
+
+        <button
+          type="submit"
+          disabled={loading}
+          style={{
+            padding: '0.55rem 1.2rem',
+            borderRadius: 999,
+            border: 'none',
+            background: '#c28b00',
+            color: '#fff',
+            fontWeight: 600,
+            cursor: loading ? 'default' : 'pointer',
+          }}
+        >
+          {loading ? 'Inloggen…' : 'Inloggen'}
+        </button>
+      </form>
+
+      <div
+        style={{
+          marginTop: '0.9rem',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '0.35rem',
+          fontSize: '0.9rem',
+        }}
+      >
+        <Link href="/wachtwoord-vergeten" style={{ color: '#521f0a' }}>
+          Wachtwoord vergeten?
+        </Link>
+
+        <span>
           Nog geen account?{' '}
-          <a href="/register" className="link-accent">
-            Maak er één aan
-          </a>.
-        </p>
-      </section>
+          <Link href="/register" style={{ color: '#521f0a' }}>
+            Maak er één aan.
+          </Link>
+        </span>
+      </div>
     </main>
   );
 }

@@ -1,27 +1,50 @@
 'use client';
 
 import Image from 'next/image';
-import { Product } from './products';
-import { useCart } from './CartContext';
+import { useSession } from 'next-auth/react';
+import { useCart } from '@/components/CartContext';
+import type { Product } from '@/components/products';
 
-export default function ProductCard({ product }: { product: Product }) {
+type Props = {
+  product: Product;
+  onAdminEdit?: () => void;
+  onAdminDelete?: () => void;
+};
+
+export default function ProductCard({ product, onAdminEdit, onAdminDelete }: Props) {
+  const { data: session } = useSession();
+  const userAny = session?.user as any;
+  const isAdmin = !!userAny?.isAdmin;
+
   const { addItem } = useCart();
 
-  const format = (v: number) =>
-    new Intl.NumberFormat('nl-NL', { style: 'currency', currency: 'EUR' }).format(v);
+  const handleAddToCart = () =>
+    addItem(
+      {
+        id: product.id,
+        name: product.name,
+        price: product.price,
+      },
+      1
+    );
 
-  // fallback afb.
-  const imgSrc = product.image || '/products/fallback.jpg';
+  const handleAdminEdit = () => {
+    if (onAdminEdit) onAdminEdit();
+  };
+
+  const handleAdminDelete = () => {
+    if (onAdminDelete) onAdminDelete();
+  };
 
   return (
     <article className="product-card">
       <div className="product-thumb">
         <Image
-          src={imgSrc}
+          src={product.image}
           alt={product.name}
           fill
-          sizes="(max-width: 768px) 50vw, 25vw"
           className="product-img"
+          sizes="(max-width: 640px) 100vw, (max-width: 1200px) 50vw, 25vw"
         />
       </div>
 
@@ -32,14 +55,38 @@ export default function ProductCard({ product }: { product: Product }) {
         )}
 
         <div className="product-meta">
-          <span className="product-price">{format(product.price)}</span>
-          <button
-            className="btn-add"
-            onClick={() => addItem({ id: product.id, name: product.name, price: product.price }, 1)}
-            aria-label={`Voeg ${product.name} toe aan winkelmand`}
-          >
-            In mandje
-          </button>
+          <span className="product-price">
+            € {product.price.toFixed(2)}
+          </span>
+
+          {/* Niet-admin: gewone "In mandje"-knop */}
+          {!isAdmin ? (
+            <button
+              type="button"
+              className="btn-add"
+              onClick={handleAddToCart}
+            >
+              In mandje
+            </button>
+          ) : (
+            // Admin: "Bewerken" + "Verwijderen"
+            <div className="product-admin-actions">
+              <button
+                type="button"
+                className="product-admin-btn"
+                onClick={handleAdminEdit}
+              >
+                Bewerken
+              </button>
+              <button
+                type="button"
+                className="product-admin-btn product-admin-btn--secondary"
+                onClick={handleAdminDelete}
+              >
+                Verwijderen
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </article>

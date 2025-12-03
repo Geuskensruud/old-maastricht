@@ -254,26 +254,11 @@ export default function ShopClient({ initialProducts }: Props) {
           <div className="shop-grid">
             {products.map((product) => (
               <div key={product.id} className="shop-item-with-admin">
-                <ProductCard product={product} />
-
-                {isAdmin && (
-                  <div className="shop-item-admin-actions">
-                    <button
-                      type="button"
-                      className="shop-admin-btn"
-                      onClick={() => startEdit(product.id)}
-                    >
-                      Bewerken
-                    </button>
-                    <button
-                      type="button"
-                      className="shop-admin-btn shop-admin-btn--danger"
-                      onClick={() => handleDelete(product.id)}
-                    >
-                      Verwijderen
-                    </button>
-                  </div>
-                )}
+                <ProductCard
+                  product={product}
+                  onAdminEdit={() => startEdit(product.id)}
+                  onAdminDelete={() => handleDelete(product.id)}
+                />
               </div>
             ))}
           </div>
@@ -314,11 +299,11 @@ export default function ShopClient({ initialProducts }: Props) {
                     onChange={(e) =>
                       setEditCategorie(
                         e.target.value as
-                          | 'Harde kazen'
-                          | 'Zachte kazen'
-                          | 'Geiten/Schapen'
-                          | 'Specials'
-                          | ''
+                        | 'Harde kazen'
+                        | 'Zachte kazen'
+                        | 'Geiten/Schapen'
+                        | 'Specials'
+                        | ''
                       )
                     }
                     required
@@ -397,11 +382,11 @@ export default function ShopClient({ initialProducts }: Props) {
                   onChange={(e) =>
                     setNewCategorie(
                       e.target.value as
-                        | 'Harde kazen'
-                        | 'Zachte kazen'
-                        | 'Geiten/Schapen'
-                        | 'Specials'
-                        | ''
+                      | 'Harde kazen'
+                      | 'Zachte kazen'
+                      | 'Geiten/Schapen'
+                      | 'Specials'
+                      | ''
                     )
                   }
                   required

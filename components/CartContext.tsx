@@ -1,6 +1,12 @@
 'use client';
 
-import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 
 export type CartItem = {
   id: string;
@@ -9,7 +15,7 @@ export type CartItem = {
   qty: number;
 };
 
-type CartContextType = {
+export type CartContextType = {
   items: CartItem[];
   count: number;
   total: number;
@@ -28,13 +34,17 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     try {
       const raw = localStorage.getItem('cart');
       if (raw) setItems(JSON.parse(raw));
-    } catch { }
+    } catch {
+      // ignore
+    }
   }, []);
 
   useEffect(() => {
     try {
       localStorage.setItem('cart', JSON.stringify(items));
-    } catch { }
+    } catch {
+      // ignore
+    }
   }, [items]);
 
   const addItem: CartContextType['addItem'] = (item, qty = 1) => {
@@ -67,12 +77,12 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     return { count, total };
   }, [items]);
 
-  const value = { items, count, total, addItem, removeItem, clear };
+  const value: CartContextType = { items, count, total, addItem, removeItem, clear };
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }
 
-export function useCart() {
+export function useCart(): CartContextType {
   const ctx = useContext(CartContext);
   if (!ctx) throw new Error('useCart must be used within CartProvider');
   return ctx;
