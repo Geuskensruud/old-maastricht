@@ -15,7 +15,8 @@
     "nodemailer": "^7.0.10",
     "react": "19.2.0",
     "react-dom": "19.2.0",
-    "next-auth": "^4.24.0"
+    "next-auth": "^4.24.0",
+    "stripe": "^5.4.1"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
