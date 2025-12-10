@@ -9,6 +9,13 @@ function formatEuro(amount: number): string {
   return amount.toFixed(2).replace('.', ',');
 }
 
+type ViewLineItem = {
+  name: string;
+  qty: number;
+  totalEuro: number;
+  unitEuro: number;
+};
+
 export async function POST(req: Request) {
   try {
     const { sessionId } = (await req.json()) as { sessionId?: string };
@@ -33,18 +40,23 @@ export async function POST(req: Request) {
       );
     }
 
-    const lineItems = (session.line_items?.data ?? []).map((li) => {
-      const name = li.description ?? 'Product';
-      const qty = li.quantity ?? 1;
-      const totalEuro = (li.amount_total ?? 0) / 100;
-      const unitEuro = qty > 0 ? totalEuro / qty : totalEuro;
+    const rawLineItems = (session.line_items?.data ?? []) as any[];
+
+    const lineItems: ViewLineItem[] = rawLineItems.map((li: any) => {
+      const name: string = li.description ?? 'Product';
+      const qty: number = li.quantity ?? 1;
+      const totalEuro: number = (li.amount_total ?? 0) / 100;
+      const unitEuro: number = qty > 0 ? totalEuro / qty : totalEuro;
       return { name, qty, totalEuro, unitEuro };
     });
 
-    const totalEuro =
+    const totalEuro: number =
       typeof session.amount_total === 'number'
         ? session.amount_total / 100
-        : lineItems.reduce((sum, li) => sum + li.totalEuro, 0);
+        : lineItems.reduce(
+            (sum: number, li: ViewLineItem) => sum + li.totalEuro,
+            0
+          );
 
     // Metadata uit /api/checkout/session
     const md = session.metadata || {};
@@ -72,7 +84,7 @@ export async function POST(req: Request) {
       'We hebben je bestelling ontvangen en gaan ermee aan de slag. Hier is een overzicht:',
       '',
       ...lineItems.map(
-        (li) =>
+        (li: ViewLineItem) =>
           `- ${li.name} x ${li.qty} — € ${formatEuro(li.totalEuro)}`
       ),
       '',
@@ -153,7 +165,7 @@ export async function POST(req: Request) {
                   <tbody>
                     ${lineItems
                       .map(
-                        (li) => `
+                        (li: ViewLineItem) => `
                       <tr>
                         <td style="padding:8px 0;border-bottom:1px solid #f2f2f2;">
                           ${li.name}
