@@ -1,11 +1,10 @@
 // app/api/order/confirm/route.ts
 import { NextResponse } from 'next/server';
-import { stripe } from '@/lib/stripe';
+import stripe from '@/lib/stripe';
 import nodemailer from 'nodemailer';
 import path from 'path';
 
 function formatEuro(amount: number): string {
-  // NL-stijl: komma als decimaal
   return amount.toFixed(2).replace('.', ',');
 }
 
@@ -58,7 +57,6 @@ export async function POST(req: Request) {
             0
           );
 
-    // Metadata uit /api/checkout/session
     const md = session.metadata || {};
     const voornaam = md.voornaam || '';
     const achternaam = md.achternaam || '';
@@ -77,7 +75,6 @@ export async function POST(req: Request) {
 
     const bestelnotities = md.bestelnotities || '';
 
-    // Tekstversie (fallback)
     const textLines = [
       `Bedankt voor je bestelling${voornaam ? `, ${voornaam}` : ''}!`,
       '',
@@ -93,11 +90,9 @@ export async function POST(req: Request) {
       'We gaan zo snel mogelijk met je bestelling aan de slag.',
     ];
 
-    // 👉 Logo als inline attachment (CID), geen localhost-URL meer
     const logoCid = 'logo-old-maastricht';
     const logoPath = path.join(process.cwd(), 'public', 'logo.png');
 
-    // HTML-versie
     const htmlEmail = `
 <!DOCTYPE html>
 <html lang="nl">
@@ -110,7 +105,6 @@ export async function POST(req: Request) {
       <tr>
         <td align="center" style="padding:16px 8px;">
           <table width="600" cellPadding="0" cellSpacing="0" style="border-collapse:collapse;background:#ffffff;border-radius:8px;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;color:#3a2a23;">
-            <!-- Header-balk -->
             <tr>
               <td style="padding:16px 20px;border-bottom:1px solid #f0e0b0;background:#fff7e0;">
                 <table width="100%" cellPadding="0" cellSpacing="0" style="border-collapse:collapse;">
@@ -130,7 +124,6 @@ export async function POST(req: Request) {
               </td>
             </tr>
 
-            <!-- Body -->
             <tr>
               <td style="padding:20px 24px 22px;">
                 <h1 style="margin:0 0 4px;font-size:20px;color:#000;">
@@ -144,7 +137,6 @@ export async function POST(req: Request) {
                   We hebben je bestelling ontvangen en gaan ermee aan de slag. Hier is een overzicht:
                 </p>
 
-                <!-- Bestellingstabel -->
                 <table width="100%" cellPadding="0" cellSpacing="0" style="border-collapse:collapse;font-size:13px;margin-top:8px;">
                   <thead>
                     <tr>
@@ -196,7 +188,6 @@ export async function POST(req: Request) {
                   </tfoot>
                 </table>
 
-                <!-- Adresblokken -->
                 <table width="100%" cellPadding="0" cellSpacing="0" style="border-collapse:collapse;margin-top:18px;font-size:13px;">
                   <tr>
                     <td valign="top" style="width:50%;padding-right:8px;">
@@ -231,7 +222,9 @@ export async function POST(req: Request) {
                           verzendPlaats === factuurPlaats &&
                           verzendLand === factuurLand
                             ? 'Gelijk aan factuuradres'
-                            : `${[voornaam, achternaam].filter(Boolean).join(' ')}<br/>
+                            : `${[voornaam, achternaam]
+                                .filter(Boolean)
+                                .join(' ')}<br/>
                                Adres: ${
                                  [
                                    verzendStraat,
@@ -253,7 +246,6 @@ export async function POST(req: Request) {
               </td>
             </tr>
 
-            <!-- Footer -->
             <tr>
               <td style="padding:10px 16px 14px;border-top:1px solid #f0e0b0;background:#fff7e0;font-size:11px;color:#7b6c5e;text-align:center;">
                 © ${new Date().getFullYear()} Kaashandel Old Maastricht — Alle rechten voorbehouden
@@ -277,7 +269,6 @@ export async function POST(req: Request) {
       },
     });
 
-    // Mail naar klant
     await transporter.sendMail({
       from: process.env.SMTP_FROM || process.env.SMTP_USER,
       to: email,
@@ -288,12 +279,11 @@ export async function POST(req: Request) {
         {
           filename: 'logo.png',
           path: logoPath,
-          cid: logoCid, // moet overeenkomen met src="cid:..."
+          cid: logoCid,
         },
       ],
     });
 
-    // Optioneel: kopie naar de winkel zelf
     if (process.env.ORDER_NOTIFY_EMAIL) {
       await transporter.sendMail({
         from: process.env.SMTP_FROM || process.env.SMTP_USER,
