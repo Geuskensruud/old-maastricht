@@ -3,7 +3,6 @@
 
 import Link from 'next/link';
 import { useCart } from '@/components/CartContext';
-import IdealPayButton from '@/components/IdealPayButton';
 
 export default function WinkelmandPage() {
   const { items, total, addItem, removeItem, clear } = useCart();
@@ -256,7 +255,7 @@ export default function WinkelmandPage() {
                 justifyContent: 'flex-end',
               }}
             >
-              {/* Eventueel nog een link naar afrekenen met adresgegevens */}
+              {/* Naar afrekenen voor gegevens + iDEAL */}
               <Link
                 href="/afrekenen"
                 style={{
@@ -270,7 +269,7 @@ export default function WinkelmandPage() {
                   fontSize: '0.9rem',
                 }}
               >
-                Gegevens invullen
+                Gegevens invullen & afrekenen
               </Link>
 
               {/* Leegmaken winkelmand */}
@@ -291,9 +290,6 @@ export default function WinkelmandPage() {
                 Winkelmand legen
               </button>
             </div>
-
-            {/* iDEAL-betaalknop */}
-            <IdealPayButton />
           </section>
         </>
       )}

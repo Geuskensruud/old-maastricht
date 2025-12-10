@@ -1,341 +1,736 @@
+// app/afrekenen/page.tsx
 'use client';
 
+import { FormEvent, useEffect, useState } from 'react';
 import { useCart } from '@/components/CartContext';
-import { useRouter } from 'next/navigation';
-import { FormEvent, useMemo, useState } from 'react';
-import './Afrekenen.css';
+import Link from 'next/link';
+
+type LandOptie = 'Nederland' | 'België' | 'Duitsland';
 
 export default function AfrekenenPage() {
-  const { items, total, clear } = useCart();
-  const router = useRouter();
+  const { items, total } = useCart();
 
-  const [useDifferentShipping, setUseDifferentShipping] = useState(false);
+  const [voornaam, setVoornaam] = useState('');
+  const [achternaam, setAchternaam] = useState('');
+  const [bedrijfsnaam, setBedrijfsnaam] = useState('');
+  const [email, setEmail] = useState('');
+  const [telefoon, setTelefoon] = useState('');
+  const [landRegio, setLandRegio] = useState<LandOptie>('Nederland');
+  const [straatHuisnummer, setStraatHuisnummer] = useState('');
+  const [postcode, setPostcode] = useState('');
+  const [plaats, setPlaats] = useState('');
+  const [anderVerzendadres, setAnderVerzendadres] = useState(false);
+  const [vStraatHuisnummer, setVStraatHuisnummer] = useState('');
+  const [vPostcode, setVPostcode] = useState('');
+  const [vPlaats, setVPlaats] = useState('');
+  const [vLandRegio, setVLandRegio] = useState<LandOptie>('Nederland');
+  const [bestelnotities, setBestelnotities] = useState('');
 
-  const [form, setForm] = useState({
-    // Factuuradres
-    voornaam: '',
-    achternaam: '',
-    bedrijfsnaam: '',
-    email: '',
-    telefoon: '',
-    land: 'Nederland',
-    straat: '',
-    postcode: '',
-    plaats: '',
-    bestelnotities: '',
-    // Verzendadres (optioneel)
-    ship_land: 'Nederland',
-    ship_straat: '',
-    ship_postcode: '',
-    ship_plaats: '',
-  });
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
-  const landen = ['Nederland', 'België', 'Duitsland'] as const;
+  const hasItems = items.length > 0;
 
-  const format = (v: number) =>
-    new Intl.NumberFormat('nl-NL', { style: 'currency', currency: 'EUR' }).format(v);
+  // 🔸 Auto-prefill alléén factuurgegevens vanuit /api/account/profiel
+  useEffect(() => {
+    let cancelled = false;
 
-  const verzendkosten = 0;
-  const subtotaal = useMemo(() => total, [total]);
-  const eindtotaal = useMemo(() => subtotaal + verzendkosten, [subtotaal, verzendkosten]);
+    async function loadProfile() {
+      try {
+        const res = await fetch('/api/account/profiel');
+        if (!res.ok) {
+          // 401 / 404 / 500 → gewoon negeren (niet ingelogd of geen profiel)
+          return;
+        }
+        const data = await res.json();
+        if (cancelled) return;
 
-  const handleSubmit = async (e: FormEvent) => {
+        setVoornaam((prev) => prev || data.voornaam || '');
+        setAchternaam((prev) => prev || data.achternaam || '');
+        setBedrijfsnaam((prev) => prev || data.bedrijfsnaam || '');
+        setEmail((prev) => prev || data.email || '');
+        setTelefoon((prev) => prev || data.telefoon || '');
+
+        if (data.landRegio === 'België' || data.landRegio === 'Duitsland') {
+          setLandRegio(data.landRegio as LandOptie);
+        }
+
+        setStraatHuisnummer((prev) => prev || data.straatHuisnummer || '');
+        setPostcode((prev) => prev || data.postcode || '');
+        setPlaats((prev) => prev || data.plaats || '');
+
+        // Belangrijk: géén automatisch ander verzendadres meer.
+        // De gebruiker moet zelf het vinkje zetten en verzendvelden invullen.
+        // Dus:
+        // - anderVerzendadres laten zoals default (false)
+        // - vStraatHuisnummer / vPostcode / vPlaats NIET prefillen
+      } catch (e) {
+        console.error('[afrekenen] kon profiel niet laden', e);
+      }
+    }
+
+    loadProfile();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  async function handleSubmit(e: FormEvent) {
     e.preventDefault();
+    setError(null);
 
-    if (items.length === 0) {
-      alert('Je winkelmand is leeg!');
+    if (!hasItems) {
+      setError('Je winkelmand is leeg.');
       return;
     }
 
-    // stuur bevestigingsmail via API route
+    // Verplichte velden (bedrijfsnaam niet verplicht)
+    if (
+      !voornaam ||
+      !achternaam ||
+      !email ||
+      !telefoon ||
+      !straatHuisnummer ||
+      !postcode ||
+      !plaats
+    ) {
+      setError('Vul alle verplichte velden in.');
+      return;
+    }
+
+    if (anderVerzendadres) {
+      if (!vStraatHuisnummer || !vPostcode || !vPlaats) {
+        setError('Vul alle verplichte velden voor het verzendadres in.');
+        return;
+      }
+    }
+
     try {
-      const res = await fetch('/api/order', {
+      setLoading(true);
+
+      const factuurAdres = {
+        straatHuisnummer,
+        postcode,
+        plaats,
+        landRegio,
+      };
+
+      const verzendAdres = anderVerzendadres
+        ? {
+            straatHuisnummer: vStraatHuisnummer,
+            postcode: vPostcode,
+            plaats: vPlaats,
+            landRegio: vLandRegio,
+          }
+        : factuurAdres;
+
+      const res = await fetch('/api/checkout/session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          email: form.email,
-          voornaam: form.voornaam,
-          achternaam: form.achternaam,
-          telefoon: form.telefoon,
-          producten: items.map((p) => ({ name: p.name, qty: p.qty, price: p.price })),
-          totaal: total,
-          // optioneel: adresinfo meesturen
-          factuuradres: {
-            voornaam: form.voornaam,
-            achternaam: form.achternaam,
-            bedrijfsnaam: form.bedrijfsnaam,
-            email: form.email,
-            telefoon: form.telefoon,
-            land: form.land,
-            straat: form.straat,
-            postcode: form.postcode,
-            plaats: form.plaats,
-            bestelnotities: form.bestelnotities,
+          items: items.map((it) => ({
+            id: it.id,
+            name: it.name,
+            price: it.price,
+            qty: it.qty,
+          })),
+          customer: {
+            voornaam,
+            achternaam,
+            bedrijfsnaam: bedrijfsnaam || undefined,
+            email,
+            telefoon,
+            factuurAdres,
+            verzendAdres,
+            bestelnotities: bestelnotities || undefined,
           },
-          verzendadres: useDifferentShipping
-            ? {
-                land: form.ship_land,
-                straat: form.ship_straat,
-                postcode: form.ship_postcode,
-                plaats: form.ship_plaats,
-              }
-            : null,
         }),
       });
 
-      if (!res.ok) {
-        throw new Error('Mail verzenden mislukte');
+      const data = await res.json();
+
+      if (!res.ok || !data.url) {
+        setError(data.error || 'Kon geen iDEAL-betaling starten.');
+        setLoading(false);
+        return;
       }
 
-      alert(
-        `Bedankt ${form.voornaam}! Je bestelling is geplaatst en een bevestiging is verzonden naar ${form.email}.`
-      );
-      clear();
-      router.push('/');
+      window.location.href = data.url as string;
     } catch (err) {
-      console.error(err);
-      alert('Er ging iets mis bij het plaatsen van je bestelling. Probeer het opnieuw.');
+      console.error('[afrekenen] error:', err);
+      setError('Kon geen iDEAL-betaling starten.');
+      setLoading(false);
     }
-  };
+  }
+
+  if (!hasItems) {
+    return (
+      <main style={{ maxWidth: 800, margin: '2rem auto', padding: '0 1rem' }}>
+        <h1
+          style={{
+            fontSize: '1.6rem',
+            marginBottom: '0.75rem',
+            color: '#521f0a',
+          }}
+        >
+          Afrekenen
+        </h1>
+        <p style={{ marginBottom: '1rem' }}>
+          Je winkelmand is leeg. Voeg eerst producten toe voordat je kunt afrekenen.
+        </p>
+        <Link
+          href="/shop"
+          style={{
+            display: 'inline-block',
+            padding: '0.55rem 1.2rem',
+            borderRadius: 999,
+            border: 'none',
+            background: '#c28b00',
+            color: '#fff',
+            fontWeight: 600,
+            textDecoration: 'none',
+          }}
+        >
+          Ga naar de shop
+        </Link>
+      </main>
+    );
+  }
 
   return (
-    <section className="checkout-wrap">
-      <h1 className="checkout-title">Afrekenen</h1>
+    <main style={{ maxWidth: 900, margin: '2rem auto', padding: '0 1rem' }}>
+      <h1
+        style={{
+          fontSize: '1.8rem',
+          marginBottom: '1rem',
+          color: '#521f0a',
+        }}
+      >
+        Afrekenen
+      </h1>
 
-      {items.length === 0 ? (
-        <p>
-          Je winkelmand is leeg. Ga terug naar de{' '}
-          <a href="/shop" className="link-shop">shop</a> om producten toe te voegen.
-        </p>
-      ) : (
-        <>
-          {/* ========== BESTELOVERZICHT ========== */}
-          <div className="order-summary">
-            <h2>Besteloverzicht</h2>
-            <div className="table-container">
-              <table className="order-table">
-                <thead>
-                  <tr>
-                    <th>Product</th>
-                    <th>Prijs</th>
-                    <th>Aantal</th>
-                    <th className="text-right">Totaal</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {items.map((it) => (
-                    <tr key={it.id}>
-                      <td>{it.name}</td>
-                      <td>{format(it.price)}</td>
-                      <td>x {it.qty}</td>
-                      <td className="text-right"><strong>{format(it.price * it.qty)}</strong></td>
-                    </tr>
-                  ))}
-                </tbody>
-                <tfoot>
-                  <tr>
-                    <td colSpan={3} className="tfoot-label">Subtotaal</td>
-                    <td className="text-right"><strong>{format(subtotaal)}</strong></td>
-                  </tr>
-                  <tr>
-                    <td colSpan={3} className="tfoot-label">Verzendkosten</td>
-                    <td className="text-right">{format(verzendkosten)}</td>
-                  </tr>
-                  <tr>
-                    <td colSpan={3} className="tfoot-label total"><strong>Totaal te betalen</strong></td>
-                    <td className="text-right total"><strong>{format(eindtotaal)}</strong></td>
-                  </tr>
-                </tfoot>
-              </table>
+      <p style={{ marginBottom: '1rem', fontSize: '0.95rem', color: '#5c4940' }}>
+        Vul je gegevens in. Daarna word je doorgestuurd naar iDEAL om je betaling
+        veilig af te ronden.
+      </p>
+
+      <section
+        style={{
+          display: 'grid',
+          gap: '1.5rem',
+          gridTemplateColumns: '1.3fr 1fr',
+        }}
+      >
+        {/* Formulier links */}
+        <form onSubmit={handleSubmit}>
+          <h2
+            style={{
+              fontSize: '1.1rem',
+              marginBottom: '0.75rem',
+              color: '#521f0a',
+            }}
+          >
+            Factuurgegevens
+          </h2>
+
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: '1fr 1fr',
+              gap: '0.75rem 1rem',
+              marginBottom: '1rem',
+            }}
+          >
+            <div>
+              <label
+                style={{
+                  display: 'block',
+                  marginBottom: '0.25rem',
+                  fontSize: '0.9rem',
+                }}
+              >
+                Voornaam *
+              </label>
+              <input
+                type="text"
+                value={voornaam}
+                onChange={(e) => setVoornaam(e.target.value)}
+                required
+                style={{
+                  width: '100%',
+                  padding: '0.45rem 0.6rem',
+                  borderRadius: 8,
+                  border: '1px solid #ddd3c5',
+                }}
+              />
+            </div>
+            <div>
+              <label
+                style={{
+                  display: 'block',
+                  marginBottom: '0.25rem',
+                  fontSize: '0.9rem',
+                }}
+              >
+                Achternaam *
+              </label>
+              <input
+                type="text"
+                value={achternaam}
+                onChange={(e) => setAchternaam(e.target.value)}
+                required
+                style={{
+                  width: '100%',
+                  padding: '0.45rem 0.6rem',
+                  borderRadius: 8,
+                  border: '1px solid #ddd3c5',
+                }}
+              />
             </div>
           </div>
 
-          {/* ========== FACTUUR- & VERZENDGEGEVENS ========== */}
-          <form className="checkout-form" onSubmit={handleSubmit}>
-            <h2>Factuur- & verzendgegevens</h2>
+          <div style={{ marginBottom: '0.75rem' }}>
+            <label
+              style={{
+                display: 'block',
+                marginBottom: '0.25rem',
+                fontSize: '0.9rem',
+              }}
+            >
+              Bedrijfsnaam (optioneel)
+            </label>
+            <input
+              type="text"
+              value={bedrijfsnaam}
+              onChange={(e) => setBedrijfsnaam(e.target.value)}
+              style={{
+                width: '100%',
+                padding: '0.45rem 0.6rem',
+                borderRadius: 8,
+                border: '1px solid #ddd3c5',
+              }}
+            />
+          </div>
 
-            {/* Naam */}
-            <div className="row-2">
-              <div>
-                <label htmlFor="voornaam">Voornaam *</label>
-                <input
-                  id="voornaam"
-                  required
-                  value={form.voornaam}
-                  onChange={(e) => setForm({ ...form, voornaam: e.target.value })}
-                />
-              </div>
-              <div>
-                <label htmlFor="achternaam">Achternaam *</label>
-                <input
-                  id="achternaam"
-                  required
-                  value={form.achternaam}
-                  onChange={(e) => setForm({ ...form, achternaam: e.target.value })}
-                />
-              </div>
-            </div>
+          <div style={{ marginBottom: '0.75rem' }}>
+            <label
+              style={{
+                display: 'block',
+                marginBottom: '0.25rem',
+                fontSize: '0.9rem',
+              }}
+            >
+              E-mailadres *
+            </label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              style={{
+                width: '100%',
+                padding: '0.45rem 0.6rem',
+                borderRadius: 8,
+                border: '1px solid #ddd3c5',
+              }}
+            />
+          </div>
 
-            {/* Bedrijfsnaam */}
+          <div style={{ marginBottom: '0.75rem' }}>
+            <label
+              style={{
+                display: 'block',
+                marginBottom: '0.25rem',
+                fontSize: '0.9rem',
+              }}
+            >
+              Telefoon *
+            </label>
+            <input
+              type="tel"
+              value={telefoon}
+              onChange={(e) => setTelefoon(e.target.value)}
+              required
+              style={{
+                width: '100%',
+                padding: '0.45rem 0.6rem',
+                borderRadius: 8,
+                border: '1px solid #ddd3c5',
+              }}
+            />
+          </div>
+
+          <div style={{ marginBottom: '0.75rem' }}>
+            <label
+              style={{
+                display: 'block',
+                marginBottom: '0.25rem',
+                fontSize: '0.9rem',
+              }}
+            >
+              Land / regio *
+            </label>
+            <select
+              value={landRegio}
+              onChange={(e) => setLandRegio(e.target.value as LandOptie)}
+              style={{
+                width: '100%',
+                padding: '0.45rem 0.6rem',
+                borderRadius: 8,
+                border: '1px solid #ddd3c5',
+                background: '#fff',
+              }}
+            >
+              <option value="Nederland">Nederland</option>
+              <option value="België">België</option>
+              <option value="Duitsland">Duitsland</option>
+            </select>
+          </div>
+
+          <div style={{ marginBottom: '0.75rem' }}>
+            <label
+              style={{
+                display: 'block',
+                marginBottom: '0.25rem',
+                fontSize: '0.9rem',
+              }}
+            >
+              Straatnaam & huisnummer *
+            </label>
+            <input
+              type="text"
+              value={straatHuisnummer}
+              onChange={(e) => setStraatHuisnummer(e.target.value)}
+              required
+              style={{
+                width: '100%',
+                padding: '0.45rem 0.6rem',
+                borderRadius: 8,
+                border: '1px solid #ddd3c5',
+              }}
+            />
+          </div>
+
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: '1fr 1fr',
+              gap: '0.75rem 1rem',
+              marginBottom: '0.75rem',
+            }}
+          >
             <div>
-              <label htmlFor="bedrijfsnaam">Bedrijfsnaam</label>
-              <input
-                id="bedrijfsnaam"
-                value={form.bedrijfsnaam}
-                onChange={(e) => setForm({ ...form, bedrijfsnaam: e.target.value })}
-              />
-            </div>
-
-            {/* Contact: email en telefoon */}
-            <div className="row-2">
-              <div>
-                <label htmlFor="email">E-mail *</label>
-                <input
-                  id="email"
-                  type="email"
-                  required
-                  value={form.email}
-                  onChange={(e) => setForm({ ...form, email: e.target.value })}
-                />
-              </div>
-              <div>
-                <label htmlFor="telefoon">Telefoon *</label>
-                <input
-                  id="telefoon"
-                  type="tel"
-                  required
-                  value={form.telefoon}
-                  onChange={(e) => setForm({ ...form, telefoon: e.target.value })}
-                />
-              </div>
-            </div>
-
-            {/* Adres */}
-            <div>
-              <label htmlFor="land">Land / regio</label>
-              <select
-                id="land"
-                value={form.land}
-                onChange={(e) => setForm({ ...form, land: e.target.value })}
-                required
+              <label
+                style={{
+                  display: 'block',
+                  marginBottom: '0.25rem',
+                  fontSize: '0.9rem',
+                }}
               >
-                {landen.map((l) => (
-                  <option key={l} value={l}>{l}</option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label htmlFor="straat">Straatnaam & huisnummer *</label>
+                Postcode *
+              </label>
               <input
-                id="straat"
+                type="text"
+                value={postcode}
+                onChange={(e) => setPostcode(e.target.value)}
                 required
-                value={form.straat}
-                onChange={(e) => setForm({ ...form, straat: e.target.value })}
+                style={{
+                  width: '100%',
+                  padding: '0.45rem 0.6rem',
+                  borderRadius: 8,
+                  border: '1px solid #ddd3c5',
+                }}
               />
             </div>
-
-            <div className="row-2">
-              <div>
-                <label htmlFor="postcode">Postcode *</label>
-                <input
-                  id="postcode"
-                  required
-                  value={form.postcode}
-                  onChange={(e) => setForm({ ...form, postcode: e.target.value })}
-                />
-              </div>
-              <div>
-                <label htmlFor="plaats">Plaats *</label>
-                <input
-                  id="plaats"
-                  required
-                  value={form.plaats}
-                  onChange={(e) => setForm({ ...form, plaats: e.target.value })}
-                />
-              </div>
-            </div>
-
-            {/* Ander verzendadres */}
-            <div className="checkbox-row">
+            <div>
+              <label
+                style={{
+                  display: 'block',
+                  marginBottom: '0.25rem',
+                  fontSize: '0.9rem',
+                }}
+              >
+                Plaats *
+              </label>
               <input
-                id="useDifferentShipping"
-                type="checkbox"
-                checked={useDifferentShipping}
-                onChange={(e) => setUseDifferentShipping(e.target.checked)}
+                type="text"
+                value={plaats}
+                onChange={(e) => setPlaats(e.target.value)}
+                required
+                style={{
+                  width: '100%',
+                  padding: '0.45rem 0.6rem',
+                  borderRadius: 8,
+                  border: '1px solid #ddd3c5',
+                }}
               />
-              <label htmlFor="useDifferentShipping">Versturen naar een ander adres?</label>
             </div>
+          </div>
 
-            {useDifferentShipping && (
-              <div className="shipping-fields">
+          <div style={{ marginBottom: '0.75rem' }}>
+            <label
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.4rem',
+                fontSize: '0.9rem',
+              }}
+            >
+              <input
+                type="checkbox"
+                checked={anderVerzendadres}
+                onChange={(e) => setAnderVerzendadres(e.target.checked)}
+              />
+              Ander verzendadres gebruiken
+            </label>
+          </div>
+
+          {anderVerzendadres && (
+            <div
+              style={{
+                padding: '0.75rem 0.9rem',
+                borderRadius: 10,
+                border: '1px solid #e0d4c2',
+                marginBottom: '0.75rem',
+              }}
+            >
+              <h3
+                style={{
+                  fontSize: '0.95rem',
+                  marginBottom: '0.5rem',
+                  color: '#521f0a',
+                }}
+              >
+                Verzendadres
+              </h3>
+
+              <div style={{ marginBottom: '0.75rem' }}>
+                <label
+                  style={{
+                    display: 'block',
+                    marginBottom: '0.25rem',
+                    fontSize: '0.9rem',
+                  }}
+                >
+                  Straatnaam & huisnummer *
+                </label>
+                <input
+                  type="text"
+                  value={vStraatHuisnummer}
+                  onChange={(e) => setVStraatHuisnummer(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '0.45rem 0.6rem',
+                    borderRadius: 8,
+                    border: '1px solid #ddd3c5',
+                  }}
+                />
+              </div>
+
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: '1fr 1fr',
+                  gap: '0.75rem 1rem',
+                  marginBottom: '0.75rem',
+                }}
+              >
                 <div>
-                  <label htmlFor="ship_land">Land / regio</label>
-                  <select
-                    id="ship_land"
-                    value={form.ship_land}
-                    onChange={(e) => setForm({ ...form, ship_land: e.target.value })}
-                    required
+                  <label
+                    style={{
+                      display: 'block',
+                      marginBottom: '0.25rem',
+                      fontSize: '0.9rem',
+                    }}
                   >
-                    {landen.map((l) => (
-                      <option key={l} value={l}>{l}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label htmlFor="ship_straat">Straatnaam & huisnummer *</label>
+                    Postcode *
+                  </label>
                   <input
-                    id="ship_straat"
-                    value={form.ship_straat}
-                    onChange={(e) => setForm({ ...form, ship_straat: e.target.value })}
-                    required={useDifferentShipping}
+                    type="text"
+                    value={vPostcode}
+                    onChange={(e) => setVPostcode(e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '0.45rem 0.6rem',
+                      borderRadius: 8,
+                      border: '1px solid #ddd3c5',
+                    }}
                   />
                 </div>
-
-                <div className="row-2">
-                  <div>
-                    <label htmlFor="ship_postcode">Postcode *</label>
-                    <input
-                      id="ship_postcode"
-                      value={form.ship_postcode}
-                      onChange={(e) => setForm({ ...form, ship_postcode: e.target.value })}
-                      required={useDifferentShipping}
-                    />
-                  </div>
-                  <div>
-                    <label htmlFor="ship_plaats">Plaats *</label>
-                    <input
-                      id="ship_plaats"
-                      value={form.ship_plaats}
-                      onChange={(e) => setForm({ ...form, ship_plaats: e.target.value })}
-                      required={useDifferentShipping}
-                    />
-                  </div>
+                <div>
+                  <label
+                    style={{
+                      display: 'block',
+                      marginBottom: '0.25rem',
+                      fontSize: '0.9rem',
+                    }}
+                  >
+                    Plaats *
+                  </label>
+                  <input
+                    type="text"
+                    value={vPlaats}
+                    onChange={(e) => setVPlaats(e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '0.45rem 0.6rem',
+                      borderRadius: 8,
+                      border: '1px solid #ddd3c5',
+                    }}
+                  />
                 </div>
               </div>
-            )}
 
-            {/* Bestelnotities */}
-            <div>
-              <label htmlFor="bestelnotities">Bestelnotities</label>
-              <textarea
-                id="bestelnotities"
-                rows={4}
-                placeholder="Bijv. leveringsvoorkeur of opmerking"
-                value={form.bestelnotities}
-                onChange={(e) => setForm({ ...form, bestelnotities: e.target.value })}
-              />
+              <div style={{ marginBottom: '0.75rem' }}>
+                <label
+                  style={{
+                    display: 'block',
+                    marginBottom: '0.25rem',
+                    fontSize: '0.9rem',
+                  }}
+                >
+                  Land / regio
+                </label>
+                <select
+                  value={vLandRegio}
+                  onChange={(e) => setVLandRegio(e.target.value as LandOptie)}
+                  style={{
+                    width: '100%',
+                    padding: '0.45rem 0.6rem',
+                    borderRadius: 8,
+                    border: '1px solid #ddd3c5',
+                    background: '#fff',
+                  }}
+                >
+                  <option value="Nederland">Nederland</option>
+                  <option value="België">België</option>
+                  <option value="Duitsland">Duitsland</option>
+                </select>
+              </div>
             </div>
+          )}
 
-            {/* Totaal & knop */}
-            <div className="checkout-footer">
-              <strong>Totaal: {format(eindtotaal)}</strong>
-              <button type="submit" className="btn-submit">Bestelling plaatsen</button>
-            </div>
-          </form>
-        </>
-      )}
-    </section>
+          <div style={{ marginBottom: '0.75rem' }}>
+            <label
+              style={{
+                display: 'block',
+                marginBottom: '0.25rem',
+                fontSize: '0.9rem',
+              }}
+            >
+              Bestelnotities (optioneel)
+            </label>
+            <textarea
+              value={bestelnotities}
+              onChange={(e) => setBestelnotities(e.target.value)}
+              rows={3}
+              style={{
+                width: '100%',
+                padding: '0.45rem 0.6rem',
+                borderRadius: 8,
+                border: '1px solid #ddd3c5',
+                resize: 'vertical',
+              }}
+            />
+          </div>
+
+          {error && (
+            <p
+              style={{
+                marginTop: '0.25rem',
+                marginBottom: '0.5rem',
+                fontSize: '0.9rem',
+                color: '#b00020',
+              }}
+            >
+              {error}
+            </p>
+          )}
+
+          <button
+            type="submit"
+            disabled={loading}
+            style={{
+              marginTop: '0.5rem',
+              padding: '0.6rem 1.4rem',
+              borderRadius: 999,
+              border: 'none',
+              background: '#168f5c',
+              color: '#fff',
+              fontWeight: 600,
+              cursor: loading ? 'default' : 'pointer',
+            }}
+          >
+            {loading ? 'Verbinding met iDEAL…' : 'Bestelling plaatsen & betalen met iDEAL'}
+          </button>
+        </form>
+
+        {/* Overzicht rechts */}
+        <aside
+          style={{
+            padding: '0.75rem 1rem',
+            borderRadius: 14,
+            border: '1px solid #e6e1d8',
+            background: '#fffef8',
+            alignSelf: 'flex-start',
+          }}
+        >
+          <h2
+            style={{
+              fontSize: '1.05rem',
+              marginBottom: '0.75rem',
+              color: '#521f0a',
+            }}
+          >
+            Jouw bestelling
+          </h2>
+
+          <ul
+            style={{
+              listStyle: 'none',
+              padding: 0,
+              margin: 0,
+              marginBottom: '0.75rem',
+            }}
+          >
+            {items.map((it) => (
+              <li
+                key={it.id}
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  gap: '0.75rem',
+                  padding: '0.3rem 0',
+                  borderBottom: '1px solid #f0e6d8',
+                  fontSize: '0.92rem',
+                }}
+              >
+                <span>
+                  {it.name} × {it.qty}
+                </span>
+                <span>
+                  € {(it.price * it.qty).toFixed(2)}
+                </span>
+              </li>
+            ))}
+          </ul>
+
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              fontWeight: 700,
+              fontSize: '1rem',
+              marginTop: '0.5rem',
+            }}
+          >
+            <span>Totaal</span>
+            <span>€ {total.toFixed(2)}</span>
+          </div>
+        </aside>
+      </section>
+    </main>
   );
 }

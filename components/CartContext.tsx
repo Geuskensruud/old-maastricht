@@ -7,15 +7,16 @@ import React, {
   useMemo,
   useState,
 } from 'react';
+import { useSession } from 'next-auth/react';
 
 export type CartItem = {
   id: string;
   name: string;
-  price: number;   // in euro's
+  price: number; // in euro's
   qty: number;
 };
 
-export type CartContextType = {
+type CartContextType = {
   items: CartItem[];
   count: number;
   total: number;
@@ -27,25 +28,76 @@ export type CartContextType = {
 const CartContext = createContext<CartContextType | null>(null);
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
+  const { data: session } = useSession();
+
+  // Bepaal een key per gebruiker (of guest)
+  const storageKey = useMemo(() => {
+    const userAny = session?.user as any | undefined;
+    const userId = userAny?.id || session?.user?.email;
+
+    if (userId) {
+      return `cart_user_${userId}`;
+    }
+    return 'cart_guest';
+  }, [session]);
+
   const [items, setItems] = useState<CartItem[]>([]);
+  const [loadedKey, setLoadedKey] = useState<string | null>(null);
 
-  // laad / bewaar in localStorage
+  // 🔸 Laden / wisselen van winkelmandje bij verandering van gebruiker
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem('cart');
-      if (raw) setItems(JSON.parse(raw));
-    } catch {
-      // ignore
-    }
-  }, []);
+    if (typeof window === 'undefined') return;
 
-  useEffect(() => {
+    // Als we al voor deze key geladen hebben: niks doen
+    if (loadedKey === storageKey) return;
+
+    let nextItems: CartItem[] = [];
+
     try {
-      localStorage.setItem('cart', JSON.stringify(items));
+      // Case 1: we gaan van user -> guest (uitloggen)
+      if (
+        loadedKey &&
+        loadedKey.startsWith('cart_user_') &&
+        storageKey === 'cart_guest'
+      ) {
+        // Zorg dat de volgende gebruiker niet het oude mandje ziet
+        localStorage.removeItem('cart_guest');
+        nextItems = [];
+      } else {
+        // Case 2: gewoon mandje van de nieuwe key laden
+        const raw = localStorage.getItem(storageKey);
+        if (raw) {
+          nextItems = JSON.parse(raw);
+        } else if (storageKey.startsWith('cart_user_')) {
+          // Case 3: inloggen → als er nog geen user-cart is,
+          // maar wél een guest-cart, neem die over.
+          const rawGuest = localStorage.getItem('cart_guest');
+          if (rawGuest) {
+            nextItems = JSON.parse(rawGuest);
+            localStorage.setItem(storageKey, rawGuest);
+          }
+        }
+      }
     } catch {
-      // ignore
+      // bij parse-fouten gewoon een leeg mandje
+      nextItems = [];
     }
-  }, [items]);
+
+    setItems(nextItems);
+    setLoadedKey(storageKey);
+  }, [storageKey, loadedKey]);
+
+  // 🔸 Bewaar winkelmandje zodra items veranderen
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (!loadedKey) return;
+
+    try {
+      localStorage.setItem(loadedKey, JSON.stringify(items));
+    } catch {
+      // negeren
+    }
+  }, [items, loadedKey]);
 
   const addItem: CartContextType['addItem'] = (item, qty = 1) => {
     setItems((prev) => {
@@ -53,7 +105,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       if (i >= 0) {
         const updatedQty = prev[i].qty + qty;
         if (updatedQty <= 0) {
-          // verwijder als het 0 of minder wordt
+          // verwijder als hoeveelheid 0 of minder wordt
           return prev.filter((p) => p.id !== item.id);
         }
         const clone = [...prev];
@@ -82,7 +134,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }
 
-export function useCart(): CartContextType {
+export function useCart() {
   const ctx = useContext(CartContext);
   if (!ctx) throw new Error('useCart must be used within CartProvider');
   return ctx;

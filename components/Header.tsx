@@ -5,13 +5,16 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { ShoppingCart } from 'lucide-react';
 import { useCart } from '@/components/CartContext';
-import { useSession, signOut } from 'next-auth/react';
+import { useSession, signIn, signOut } from 'next-auth/react';
+import { useState } from 'react';
 import './Header.css';
 
 export default function Header() {
   const pathname = usePathname();
   const { count } = useCart();
-  const { data: session } = useSession();
+
+  const { data: session, status } = useSession();
+  const [accountOpen, setAccountOpen] = useState(false);
 
   const links = [
     { href: '/', label: 'Home' },
@@ -20,25 +23,31 @@ export default function Header() {
     { href: '/shop', label: 'Shop' },
   ];
 
-  const userAny = session?.user as any;
+  const userAny = session?.user as any | undefined;
   const voornaam = userAny?.voornaam as string | undefined;
   const achternaam = userAny?.achternaam as string | undefined;
-  const email = session?.user?.email || '';
 
-  const initialsRaw =
-    (voornaam?.[0] ?? '') +
-    (achternaam?.[0] ?? '');
   const initials =
-    initialsRaw.trim().length > 0
-      ? initialsRaw.toUpperCase()
-      : (email[0]?.toUpperCase() ?? '?');
+    (voornaam?.[0] || '') + (achternaam?.[0] || session?.user?.email?.[0] || '');
+
+  const initialsLabel = initials ? initials.toUpperCase() : '?';
+
+  const handleLogout = () => {
+    setAccountOpen(false);
+    signOut({ callbackUrl: '/' });
+  };
+
+  const handleGoToAccount = () => {
+    setAccountOpen(false);
+    // Verwijs naar een accountpagina (kun je later mooi invullen)
+    window.location.href = '/account';
+  };
 
   return (
     <header className="header header--hero">
       {/* Navigatie bovenaan */}
       <div className="header-inner">
         <nav className="nav">
-          {/* Gewone links */}
           {links.map(({ href, label }) => (
             <Link
               key={href}
@@ -59,25 +68,49 @@ export default function Header() {
             )}
           </Link>
 
-          {/* Login / Initialen */}
-          {session?.user ? (
+          {/* Login / Account */}
+          {status !== 'authenticated' ? (
             <button
               type="button"
-              className="login-link login-link--initials"
-              onClick={() => signOut({ callbackUrl: '/' })}
-              title="Uitloggen"
+              className="login-button"
+              onClick={() => signIn()}
             >
-              <span className="login-initials">{initials}</span>
+              Login
             </button>
           ) : (
-            <Link href="/login" className="login-link">
-              <span>Login</span>
-            </Link>
+            <div className="account-menu">
+              <button
+                type="button"
+                className="account-trigger"
+                onClick={() => setAccountOpen((open) => !open)}
+              >
+                <span className="account-initials">{initialsLabel}</span>
+              </button>
+
+              {accountOpen && (
+                <div className="account-dropdown">
+                  <button
+                    type="button"
+                    className="account-dropdown-item"
+                    onClick={handleGoToAccount}
+                  >
+                    Account
+                  </button>
+                  <button
+                    type="button"
+                    className="account-dropdown-item account-dropdown-logout"
+                    onClick={handleLogout}
+                  >
+                    Uitloggen
+                  </button>
+                </div>
+              )}
+            </div>
           )}
         </nav>
       </div>
 
-      {/* Logo gecentreerd over de header-afbeelding */}
+      {/* Logo gecentreerd */}
       <div className="header-logo-center">
         <div className="logo-wrapper">
           <Image

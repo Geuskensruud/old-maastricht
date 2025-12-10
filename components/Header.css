@@ -209,3 +209,94 @@
     padding: 0 10px;
   }
 }
+
+/* ===== ACCOUNT / LOGIN IN NAV ===== */
+
+.login-button {
+  margin-left: 1rem;
+  padding: 0.35rem 0.9rem;
+  border-radius: 999px;
+  border: 1px solid #c28b00;
+  background: transparent;
+  color: #521f0a;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.login-button:hover {
+  background: #c28b00;
+  color: #fffef8;
+  border-color: #c28b00;
+}
+
+.account-menu {
+  position: relative;
+  margin-left: 1rem;
+}
+
+.account-trigger {
+  border: none;
+  background: #fffef8;
+  padding: 0;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.account-initials {
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  background: #c28b00;
+  color: #fffef8;
+  font-size: 0.85rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-transform: uppercase;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.9);
+}
+
+.account-dropdown {
+  position: absolute;
+  top: 120%;
+  right: 0;
+  background: #fffef8;
+  border-radius: 10px;
+  border: 1px solid #e0d4c2;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+  min-width: 150px;
+  padding: 0.35rem 0;
+  z-index: 10;
+}
+
+.account-dropdown-item {
+  width: 100%;
+  text-align: left;
+  padding: 0.45rem 0.8rem;
+  background: transparent;
+  border: none;
+  font-size: 0.9rem;
+  cursor: pointer;
+  color: #521f0a;
+}
+
+.account-dropdown-item:hover {
+  background: #f3ebda;
+}
+
+.account-dropdown-logout {
+  border-top: 1px solid #e6e1d8;
+  margin-top: 0.25rem;
+}
+
+/* Zorg dat nav-items netjes gecentreerd blijven */
+.nav {
+  display: flex;
+  align-items: center;
+  gap: clamp(1rem, 2vw, 2rem);
+}

@@ -1,7 +1,7 @@
 // app/api/checkout/session/route.ts
 import { NextResponse } from 'next/server';
 import { stripe } from '@/lib/stripe';
-import type Stripe from 'stripe'; // ⬅️ HIER de type-import
+import type Stripe from 'stripe';
 
 type CartItem = {
   id: string;
@@ -10,9 +10,30 @@ type CartItem = {
   qty: number;
 };
 
+type Address = {
+  straatHuisnummer: string;
+  postcode: string;
+  plaats: string;
+  landRegio: string;
+};
+
+type Customer = {
+  voornaam: string;
+  achternaam: string;
+  bedrijfsnaam?: string;
+  email: string;
+  telefoon: string;
+  factuurAdres: Address;
+  verzendAdres: Address;
+  bestelnotities?: string;
+};
+
 export async function POST(req: Request) {
   try {
-    const { items } = (await req.json()) as { items?: CartItem[] };
+    const { items, customer } = (await req.json()) as {
+      items?: CartItem[];
+      customer?: Customer;
+    };
 
     if (!items || items.length === 0) {
       return NextResponse.json(
@@ -21,7 +42,6 @@ export async function POST(req: Request) {
       );
     }
 
-    // Line-items voor Stripe Checkout (in centen)
     const line_items: Stripe.Checkout.SessionCreateParams.LineItem[] =
       items.map((item) => ({
         quantity: item.qty,
@@ -36,12 +56,32 @@ export async function POST(req: Request) {
 
     const origin = new URL(req.url).origin;
 
+    const metadata: Record<string, string> = {};
+
+    if (customer) {
+      metadata['voornaam'] = customer.voornaam;
+      metadata['achternaam'] = customer.achternaam;
+      if (customer.bedrijfsnaam) metadata['bedrijfsnaam'] = customer.bedrijfsnaam;
+      metadata['telefoon'] = customer.telefoon;
+      metadata['factuur_straat'] = customer.factuurAdres.straatHuisnummer;
+      metadata['factuur_postcode'] = customer.factuurAdres.postcode;
+      metadata['factuur_plaats'] = customer.factuurAdres.plaats;
+      metadata['factuur_land'] = customer.factuurAdres.landRegio;
+      metadata['verzend_straat'] = customer.verzendAdres.straatHuisnummer;
+      metadata['verzend_postcode'] = customer.verzendAdres.postcode;
+      metadata['verzend_plaats'] = customer.verzendAdres.plaats;
+      metadata['verzend_land'] = customer.verzendAdres.landRegio;
+      if (customer.bestelnotities) metadata['bestelnotities'] = customer.bestelnotities;
+    }
+
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
-      payment_method_types: ['ideal'], // iDEAL als betaalmethode
+      payment_method_types: ['ideal'],
       line_items,
       success_url: `${origin}/betaald?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${origin}/winkelmand`,
+      cancel_url: `${origin}/afrekenen`,
+      customer_email: customer?.email,
+      metadata,
     });
 
     return NextResponse.json({ url: session.url });
