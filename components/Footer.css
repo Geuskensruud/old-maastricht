@@ -1,0 +1,88 @@
+.footer {
+  background: #521f0a;
+  color: #fffef8;
+  margin-top: 0;
+  padding-top: 2rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.footer-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 2rem;
+}
+
+/* Linkerkant: logo + tagline */
+.footer-left {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.footer-logo-wrapper {
+  position: relative;
+  width: 180px;
+  max-width: 60vw;
+  aspect-ratio: 4 / 1; /* zorg dat het logo netjes schaalt */
+}
+
+.footer-logo-img {
+  object-fit: contain;
+}
+
+.footer-tagline {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #f3e2c8;
+}
+
+/* Rechterkant: interesse + mail */
+.footer-right {
+  text-align: right;
+  font-size: 0.9rem;
+}
+
+.footer-right h3 {
+  font-size: 1rem;
+  margin: 0 0 0.3rem;
+  color: #f4d48c;
+}
+
+.footer-right p {
+  margin: 0.1rem 0;
+}
+
+.footer-right a {
+  color: #f4d48c;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.footer-right a:hover {
+  text-decoration: underline;
+}
+
+/* Onderbalk */
+.footer-bottom {
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  padding: 0.75rem 1rem 1rem;
+  text-align: center;
+  font-size: 0.8rem;
+  color: #f3e2c8;
+}
+
+/* Responsive: onder elkaar op mobiel */
+@media (max-width: 768px) {
+  .footer-inner {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .footer-right {
+    text-align: left;
+  }
+}
