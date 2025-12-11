@@ -1,88 +1,100 @@
 .footer {
-  background: #521f0a;
-  color: #fffef8;
-  margin-top: 0;
-  padding-top: 2rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  background: #521f0a; /* aangepast naar kaas-bruin */
+  color: #ffffff;
+  padding: 2rem 0 1.5rem;
+  margin-top: auto;
+  font-family: inherit;
 }
 
 .footer-inner {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 1rem 1.5rem;
+  padding: 0 1rem;
   display: flex;
   justify-content: space-between;
-  align-items: center;
   gap: 2rem;
+  align-items: flex-start;
 }
 
-/* Linkerkant: logo + tagline */
+/* Linkerblok: logo + tagline gecentreerd onder elkaar */
 .footer-left {
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
+  align-items: center;
+  text-align: center;
+  gap: 0.6rem;
 }
 
+/* Logo zelf */
 .footer-logo-wrapper {
   position: relative;
   width: 180px;
-  max-width: 60vw;
-  aspect-ratio: 4 / 1; /* zorg dat het logo netjes schaalt */
+  height: 70px;
 }
 
 .footer-logo-img {
   object-fit: contain;
 }
 
+/* Tagline onder logo */
 .footer-tagline {
   margin: 0;
-  font-size: 0.9rem;
-  color: #f3e2c8;
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: #f5f0e8;
 }
 
-/* Rechterkant: interesse + mail */
+/* Rechterblok: contactinfo */
 .footer-right {
   text-align: right;
-  font-size: 0.9rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-left: auto;
 }
 
-.footer-right h3 {
-  font-size: 1rem;
-  margin: 0 0 0.3rem;
-  color: #f4d48c;
+.footer-contact-title {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #f5f0e8;
 }
 
-.footer-right p {
-  margin: 0.1rem 0;
-}
-
-.footer-right a {
-  color: #f4d48c;
+.footer-contact-email {
+  color: #ffd275;
   text-decoration: none;
-  font-weight: 500;
+  font-size: 0.95rem;
+  font-weight: 600;
 }
 
-.footer-right a:hover {
+.footer-contact-email:hover {
   text-decoration: underline;
 }
 
-/* Onderbalk */
+/* Onderste regel */
 .footer-bottom {
-  border-top: 1px solid rgba(255, 255, 255, 0.12);
-  padding: 0.75rem 1rem 1rem;
-  text-align: center;
+  max-width: 1200px;
+  margin: 1.5rem auto 0;
+  padding: 0 1rem;
   font-size: 0.8rem;
-  color: #f3e2c8;
+  color: #fbeee0;
+  text-align: center;
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+  padding-top: 0.9rem;
 }
 
-/* Responsive: onder elkaar op mobiel */
+/* Responsive */
 @media (max-width: 768px) {
   .footer-inner {
     flex-direction: column;
-    align-items: flex-start;
+    align-items: center;
+    text-align: center;
   }
 
   .footer-right {
-    text-align: left;
+    text-align: center;
+    margin-left: 0;
   }
 }
