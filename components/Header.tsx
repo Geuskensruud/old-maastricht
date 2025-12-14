@@ -39,8 +39,12 @@ export default function Header() {
 
   const handleGoToAccount = () => {
     setAccountOpen(false);
-    // Verwijs naar een accountpagina (kun je later mooi invullen)
     window.location.href = '/account';
+  };
+
+  const handleGoToPasswordReset = () => {
+    setAccountOpen(false);
+    window.location.href = '/wachtwoord-vergeten';
   };
 
   return (
@@ -96,6 +100,15 @@ export default function Header() {
                   >
                     Account
                   </button>
+
+                  <button
+                    type="button"
+                    className="account-dropdown-item"
+                    onClick={handleGoToPasswordReset}
+                  >
+                    Wachtwoord resetten
+                  </button>
+
                   <button
                     type="button"
                     className="account-dropdown-item account-dropdown-logout"
