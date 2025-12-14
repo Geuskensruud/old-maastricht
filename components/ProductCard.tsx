@@ -1,24 +1,25 @@
 'use client';
 
 import Image from 'next/image';
-import { useSession } from 'next-auth/react';
 import { useCart } from '@/components/CartContext';
 import type { Product } from '@/components/products';
 
-type Props = {
+type ProductCardProps = {
   product: Product;
-  onAdminEdit?: () => void;
-  onAdminDelete?: () => void;
+  isAdmin?: boolean;
+  onEdit?: () => void;
+  onDelete?: () => void;
 };
 
-export default function ProductCard({ product, onAdminEdit, onAdminDelete }: Props) {
-  const { data: session } = useSession();
-  const userAny = session?.user as any;
-  const isAdmin = !!userAny?.isAdmin;
-
+export default function ProductCard({
+  product,
+  isAdmin,
+  onEdit,
+  onDelete,
+}: ProductCardProps) {
   const { addItem } = useCart();
 
-  const handleAddToCart = () =>
+  const handleAddToCart = () => {
     addItem(
       {
         id: product.id,
@@ -27,24 +28,17 @@ export default function ProductCard({ product, onAdminEdit, onAdminDelete }: Pro
       },
       1
     );
-
-  const handleAdminEdit = () => {
-    if (onAdminEdit) onAdminEdit();
-  };
-
-  const handleAdminDelete = () => {
-    if (onAdminDelete) onAdminDelete();
   };
 
   return (
     <article className="product-card">
       <div className="product-thumb">
         <Image
-          src={product.image}
+          src={product.image ?? '/icons/cheese.png'}
           alt={product.name}
           fill
+          sizes="(max-width: 640px) 100vw, (max-width: 960px) 50vw, 25vw"
           className="product-img"
-          sizes="(max-width: 640px) 100vw, (max-width: 1200px) 50vw, 25vw"
         />
       </div>
 
@@ -56,11 +50,27 @@ export default function ProductCard({ product, onAdminEdit, onAdminDelete }: Pro
 
         <div className="product-meta">
           <span className="product-price">
-            € {product.price.toFixed(2)}
+            € {product.price.toFixed(2).replace('.', ',')}
           </span>
 
-          {/* Niet-admin: gewone "In mandje"-knop */}
-          {!isAdmin ? (
+          {isAdmin ? (
+            <div className="product-admin-buttons">
+              <button
+                type="button"
+                className="btn-add"
+                onClick={onEdit}
+              >
+                Bewerken
+              </button>
+              <button
+                type="button"
+                className="btn-delete"
+                onClick={onDelete}
+              >
+                Verwijderen
+              </button>
+            </div>
+          ) : (
             <button
               type="button"
               className="btn-add"
@@ -68,24 +78,6 @@ export default function ProductCard({ product, onAdminEdit, onAdminDelete }: Pro
             >
               In mandje
             </button>
-          ) : (
-            // Admin: "Bewerken" + "Verwijderen"
-            <div className="product-admin-actions">
-              <button
-                type="button"
-                className="product-admin-btn"
-                onClick={handleAdminEdit}
-              >
-                Bewerken
-              </button>
-              <button
-                type="button"
-                className="product-admin-btn product-admin-btn--secondary"
-                onClick={handleAdminDelete}
-              >
-                Verwijderen
-              </button>
-            </div>
           )}
         </div>
       </div>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, FormEvent } from 'react';
+import { useEffect, useState, FormEvent, ChangeEvent } from 'react';
 import { useSession } from 'next-auth/react';
 import ProductCard from '@/components/ProductCard';
 import type { Product } from '@/components/products';
@@ -62,6 +62,9 @@ export default function ShopClient({ initialProducts }: Props) {
   const [editPrijs, setEditPrijs] = useState('');
   const [editAfbeelding, setEditAfbeelding] = useState('');
   const [editActief, setEditActief] = useState(true);
+
+  const [uploadingNewImage, setUploadingNewImage] = useState(false);
+  const [uploadingEditImage, setUploadingEditImage] = useState(false);
 
   async function reloadFromApi() {
     try {
@@ -235,6 +238,71 @@ export default function ShopClient({ initialProducts }: Props) {
     }
   }
 
+  // Nieuwe afbeelding uploaden (en URL in zelfde veld zetten)
+  async function handleNewImageFile(e: ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setUploadingNewImage(true);
+      setError(null);
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const res = await fetch('/api/admin/upload-image', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.url) {
+        setError(data.error || 'Afbeelding uploaden mislukt.');
+        setUploadingNewImage(false);
+        return;
+      }
+
+      // URL van upload in hetzelfde veld
+      setNewAfbeelding(data.url);
+      setUploadingNewImage(false);
+    } catch (err) {
+      console.error(err);
+      setError('Afbeelding uploaden mislukt.');
+      setUploadingNewImage(false);
+    }
+  }
+
+  // Afbeelding uploaden bij bewerken (ook in hetzelfde veld)
+  async function handleEditImageFile(e: ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setUploadingEditImage(true);
+      setError(null);
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const res = await fetch('/api/admin/upload-image', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.url) {
+        setError(data.error || 'Afbeelding uploaden mislukt.');
+        setUploadingEditImage(false);
+        return;
+      }
+
+      setEditAfbeelding(data.url);
+      setUploadingEditImage(false);
+    } catch (err) {
+      console.error(err);
+      setError('Afbeelding uploaden mislukt.');
+      setUploadingEditImage(false);
+    }
+  }
+
   return (
     <div className="shop-page">
       <header className="shop-header">
@@ -253,13 +321,13 @@ export default function ShopClient({ initialProducts }: Props) {
         ) : (
           <div className="shop-grid">
             {products.map((product) => (
-              <div key={product.id} className="shop-item-with-admin">
-                <ProductCard
-                  product={product}
-                  onAdminEdit={() => startEdit(product.id)}
-                  onAdminDelete={() => handleDelete(product.id)}
-                />
-              </div>
+              <ProductCard
+                key={product.id}
+                product={product}
+                isAdmin={isAdmin}
+                onEdit={() => startEdit(product.id)}
+                onDelete={() => handleDelete(product.id)}
+              />
             ))}
           </div>
         )}
@@ -299,11 +367,11 @@ export default function ShopClient({ initialProducts }: Props) {
                     onChange={(e) =>
                       setEditCategorie(
                         e.target.value as
-                        | 'Harde kazen'
-                        | 'Zachte kazen'
-                        | 'Geiten/Schapen'
-                        | 'Specials'
-                        | ''
+                          | 'Harde kazen'
+                          | 'Zachte kazen'
+                          | 'Geiten/Schapen'
+                          | 'Specials'
+                          | ''
                       )
                     }
                     required
@@ -324,14 +392,29 @@ export default function ShopClient({ initialProducts }: Props) {
                     required
                   />
                 </div>
-                <div>
-                  <label>Afbeelding (URL, optioneel)</label>
-                  <input
-                    type="text"
-                    value={editAfbeelding}
-                    onChange={(e) => setEditAfbeelding(e.target.value)}
-                  />
+
+                {/* Gecombineerd veld: URL + upload */}
+                <div className="shop-admin-form-full">
+                  <label>Afbeelding (URL of upload, optioneel)</label>
+                  <div className="image-input-row">
+                    <input
+                      type="text"
+                      placeholder="/uploads/… of https://…"
+                      value={editAfbeelding}
+                      onChange={(e) => setEditAfbeelding(e.target.value)}
+                    />
+                    <input
+                      type="file"
+                      accept="image/*"
+                      capture="environment"
+                      onChange={handleEditImageFile}
+                    />
+                  </div>
+                  {uploadingEditImage && (
+                    <p className="image-upload-status">Afbeelding uploaden…</p>
+                  )}
                 </div>
+
                 <div className="shop-admin-form-full">
                   <label>Omschrijving (optioneel)</label>
                   <textarea
@@ -382,11 +465,11 @@ export default function ShopClient({ initialProducts }: Props) {
                   onChange={(e) =>
                     setNewCategorie(
                       e.target.value as
-                      | 'Harde kazen'
-                      | 'Zachte kazen'
-                      | 'Geiten/Schapen'
-                      | 'Specials'
-                      | ''
+                        | 'Harde kazen'
+                        | 'Zachte kazen'
+                        | 'Geiten/Schapen'
+                        | 'Specials'
+                        | ''
                     )
                   }
                   required
@@ -407,14 +490,29 @@ export default function ShopClient({ initialProducts }: Props) {
                   required
                 />
               </div>
-              <div>
-                <label>Afbeelding (URL, optioneel)</label>
-                <input
-                  type="text"
-                  value={newAfbeelding}
-                  onChange={(e) => setNewAfbeelding(e.target.value)}
-                />
+
+              {/* Gecombineerd veld: URL + upload */}
+              <div className="shop-admin-form-full">
+                <label>Afbeelding (URL of upload, optioneel)</label>
+                <div className="image-input-row">
+                  <input
+                    type="text"
+                    placeholder="/uploads/… of https://…"
+                    value={newAfbeelding}
+                    onChange={(e) => setNewAfbeelding(e.target.value)}
+                  />
+                  <input
+                    type="file"
+                    accept="image/*"
+                    capture="environment"
+                    onChange={handleNewImageFile}
+                  />
+                </div>
+                {uploadingNewImage && (
+                  <p className="image-upload-status">Afbeelding uploaden…</p>
+                )}
               </div>
+
               <div className="shop-admin-form-full">
                 <label>Omschrijving (optioneel)</label>
                 <textarea
