@@ -1,22 +1,12 @@
+// app/api/admin/upload-image/route.ts
 import { NextResponse } from 'next/server';
-import fs from 'fs/promises';
-import path from 'path';
+import db from '@/lib/db';
 import crypto from 'crypto';
-// Als je auth wilt afdwingen, kun je hier getServerSession importeren:
-// import { getServerSession } from 'next-auth';
-// import { authOptions } from '@/lib/auth';
 
 export const runtime = 'nodejs';
 
 export async function POST(req: Request) {
   try {
-    // Eventueel: admin-check via NextAuth
-    // const session = await getServerSession(authOptions as any);
-    // const userAny = session?.user as any;
-    // if (!session || !userAny?.isAdmin) {
-    //   return NextResponse.json({ error: 'Niet geautoriseerd.' }, { status: 401 });
-    // }
-
     const formData = await req.formData();
     const file = formData.get('file');
 
@@ -27,7 +17,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const mime = file.type || '';
+    const mime = file.type || 'application/octet-stream';
     if (!mime.startsWith('image/')) {
       return NextResponse.json(
         { error: 'Alleen afbeeldingsbestanden zijn toegestaan.' },
@@ -38,17 +28,18 @@ export async function POST(req: Request) {
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
-    const originalName = file.name || 'upload.png';
-    const ext = (originalName.split('.').pop() || 'png').toLowerCase();
-    const fileName = `${crypto.randomUUID()}.${ext}`;
+    const id = crypto.randomUUID();
 
-    const uploadDir = path.join(process.cwd(), 'public', 'uploads');
-    await fs.mkdir(uploadDir, { recursive: true });
+    await db.query(
+      `
+        INSERT INTO kaas_afbeeldingen (id, data, mime_type)
+        VALUES ($1, $2, $3)
+      `,
+      [id, buffer, mime]
+    );
 
-    const filePath = path.join(uploadDir, fileName);
-    await fs.writeFile(filePath, buffer);
-
-    const url = `/uploads/${fileName}`;
+    // URL die we in de kaas.afbeelding kolom kunnen zetten
+    const url = `/api/kaas-afbeelding/${id}`;
 
     return NextResponse.json({ url });
   } catch (err) {
