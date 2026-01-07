@@ -3,41 +3,36 @@ import Image from 'next/image';
 import './Footer.css';
 
 export default function Footer() {
-  const year = new Date().getFullYear();
-
   return (
     <footer className="footer">
       <div className="footer-inner">
-        {/* Linkerblok: logo boven tagline, gecentreerd */}
+        {/* Linkerblok: logo + tagline */}
         <div className="footer-left">
           <div className="footer-logo-wrapper">
             <Image
               src="/logowit.png"
               alt="Old Maastricht logo"
               fill
-              sizes="200px"
+              sizes="180px"
               className="footer-logo-img"
+              priority
             />
           </div>
-          <p className="footer-tagline">De meest rebelse kaas van Nederland</p>
+          <p className="footer-tagline">
+            De meest rebelse kaas van Nederland
+          </p>
         </div>
 
         {/* Rechterblok: contact */}
         <div className="footer-right">
-          <p className="footer-contact-title">
-            Interesse? Neem contact met ons op
+          <p className="footer-contact-title">Interesse?</p>
+          <p className="footer-contact-text">
+            Neem contact met ons op via{' '}
+            <a href="mailto:info@oldmaastricht.nl">
+              info@oldmaastricht.nl
+            </a>
           </p>
-          <a
-            href="mailto:info@oldmaastricht.nl"
-            className="footer-contact-email"
-          >
-            info@oldmaastricht.nl
-          </a>
         </div>
-      </div>
-
-      <div className="footer-bottom">
-        <p>© {year} Kaashandel Old Maastricht — Alle rechten voorbehouden</p>
       </div>
     </footer>
   );

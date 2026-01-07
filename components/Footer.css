@@ -1,100 +1,82 @@
 .footer {
-  background: #521f0a; /* aangepast naar kaas-bruin */
-  color: #ffffff;
-  padding: 2rem 0 1.5rem;
-  margin-top: auto;
-  font-family: inherit;
+  background-color: #521f0a;
+  color: #f7ede0;
+  padding: 1.75rem 10%;
 }
 
 .footer-inner {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 1rem;
   display: flex;
+  align-items: center;
   justify-content: space-between;
   gap: 2rem;
-  align-items: flex-start;
 }
 
-/* Linkerblok: logo + tagline gecentreerd onder elkaar */
+/* Linkerzijde: logo + tagline */
 .footer-left {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  gap: 0.6rem;
+  flex: 1 1 0;
+  text-align: left;
 }
 
-/* Logo zelf */
+/* Logo gecentreerd boven de tagline */
 .footer-logo-wrapper {
   position: relative;
-  width: 180px;
-  height: 70px;
+  width: 180px;        /* breedte logo */
+  height: 90px;        /* hoogte logo */
+  margin: 0 auto 0.5rem;
 }
 
 .footer-logo-img {
   object-fit: contain;
+  /* voor de zekerheid, als logowit.png niet echt wit is */
+  /* filter: brightness(0) invert(1); */
 }
 
-/* Tagline onder logo */
 .footer-tagline {
   margin: 0;
   font-size: 0.95rem;
   font-weight: 600;
-  letter-spacing: 0.03em;
-  text-transform: uppercase;
-  color: #f5f0e8;
+  letter-spacing: 0.5px;
+  text-align: center;
 }
 
-/* Rechterblok: contactinfo */
+/* Rechterzijde: contact */
 .footer-right {
+  flex: 1 1 0;
   text-align: right;
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-  margin-left: auto;
 }
 
 .footer-contact-title {
+  margin: 0 0 0.25rem;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.footer-contact-text {
   margin: 0;
   font-size: 0.95rem;
-  font-weight: 600;
-  color: #f5f0e8;
 }
 
-.footer-contact-email {
-  color: #ffd275;
-  text-decoration: none;
-  font-size: 0.95rem;
+.footer-contact-text a {
+  color: #f7ede0;
   font-weight: 600;
-}
-
-.footer-contact-email:hover {
   text-decoration: underline;
+  text-decoration-thickness: 1px;
 }
 
-/* Onderste regel */
-.footer-bottom {
-  max-width: 1200px;
-  margin: 1.5rem auto 0;
-  padding: 0 1rem;
-  font-size: 0.8rem;
-  color: #fbeee0;
-  text-align: center;
-  border-top: 1px solid rgba(255, 255, 255, 0.15);
-  padding-top: 0.9rem;
-}
-
-/* Responsive */
+/* Responsief: onder elkaar op mobiel */
 @media (max-width: 768px) {
+  .footer {
+    padding: 1.5rem 1.5rem;
+  }
+
   .footer-inner {
     flex-direction: column;
     align-items: center;
     text-align: center;
   }
 
+  .footer-left,
   .footer-right {
     text-align: center;
-    margin-left: 0;
   }
 }
