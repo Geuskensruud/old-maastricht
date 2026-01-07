@@ -1,69 +1,23 @@
 // app/betaald/page.tsx
-'use client';
+import BetaaldClient from './BetaaldClient';
 
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+type PageProps = {
+  searchParams: Promise<{
+    session_id?: string | string[];
+  }>;
+};
 
-export default function BetaaldPage() {
-  const router = useRouter();
+export default async function BetaaldPage({ searchParams }: PageProps) {
+  const params = await searchParams;
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      router.push('/');
-    }, 15000); // 15 seconden
+  let sessionId = '';
+  const raw = params.session_id;
 
-    return () => clearTimeout(timer);
-  }, [router]);
+  if (typeof raw === 'string') {
+    sessionId = raw;
+  } else if (Array.isArray(raw) && raw.length > 0) {
+    sessionId = raw[0];
+  }
 
-  return (
-    <main
-      style={{
-        maxWidth: 600,
-        margin: '2rem auto',
-        padding: '0 1rem',
-        textAlign: 'center',
-      }}
-    >
-      <h1
-        style={{
-          fontSize: '2rem',
-          marginBottom: '1rem',
-          color: '#521f0a',
-        }}
-      >
-        Bedankt voor je bestelling!
-      </h1>
-
-      <p style={{ marginBottom: '0.75rem' }}>
-        We hebben je betaling succesvol ontvangen. Je ontvangt zo meteen een
-        bevestiging per e-mail.
-      </p>
-
-      <p style={{ marginBottom: '1.5rem' }}>
-        Je wordt automatisch teruggestuurd naar de homepagina.
-      </p>
-
-      <button
-        type="button"
-        onClick={() => router.push('/')}
-        style={{
-          backgroundColor: '#521f0a',
-          color: '#fff',
-          border: '1px solid #f3e0c2',
-          borderRadius: '6px',        // zelfde idea als Maps-knop
-          padding: '0.45rem 1rem',
-          fontWeight: 600,
-          fontSize: '0.95rem',
-          cursor: 'pointer',
-          display: 'inline-flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: '0.4rem',
-          boxShadow: '0 2px 6px rgba(0,0,0,0.16)',
-        }}
-      >
-        Terug naar home
-      </button>
-    </main>
-  );
+  return <BetaaldClient sessionId={sessionId} />;
 }
