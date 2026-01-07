@@ -10,7 +10,7 @@ export default function Footer() {
         <div className="footer-left">
           <div className="footer-logo-wrapper">
             <Image
-              src="/logowit.png"
+              src="/logo.png"
               alt="Old Maastricht logo"
               fill
               sizes="180px"
