@@ -53,7 +53,6 @@ export async function POST(req: Request) {
     const items = body.items;
     const customer = body.customer || {};
 
-    // Enige harde check: er moeten producten zijn
     if (!items || !Array.isArray(items) || items.length === 0) {
       return NextResponse.json(
         { error: 'Geen producten in winkelmandje.' },
@@ -92,12 +91,14 @@ export async function POST(req: Request) {
       },
     }));
 
-    const origin =
-      process.env.NEXT_PUBLIC_SITE_URL ||
-      req.headers.get('origin') ||
-      'http://localhost:3000';
+    // ✅ Bepaal base URL: eerst env, dan origin-header, dan localhost als laatste redmiddel
+    const envUrl = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/+$/, '');
+    const headerOrigin = req.headers.get('origin')?.replace(/\/+$/, '');
+    const origin = envUrl || headerOrigin || 'http://localhost:3000';
 
-      console.log('stripe keys:', Object.keys(stripe));
+    // (optioneel) debuggen:
+    // console.log('Checkout origin:', origin);
+
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
       payment_method_types: ['ideal'],
@@ -124,7 +125,7 @@ export async function POST(req: Request) {
         bestelnotities: customer.bestelnotities || '',
         ander_verzendadres: hasOtherAddress ? '1' : '0',
       },
-    } as any); // cast als any om type-gezeur te vermijden
+    } as any); // cast als any om streng Stripe-typen wat losser te laten
 
     return NextResponse.json({ id: session.id, url: session.url });
   } catch (err) {
