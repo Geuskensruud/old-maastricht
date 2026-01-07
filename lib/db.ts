@@ -1,5 +1,5 @@
 import { Pool } from 'pg';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import { randomUUID } from 'crypto';
 
 if (!process.env.DATABASE_URL) {
