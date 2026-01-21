@@ -1,13 +1,28 @@
 // components/WaarTeKoop.tsx
+'use client';
+
 import './WaarTeKoop.css';
+import { useLanguage } from '@/components/LanguageContext';
 
 export default function WaarTeKoop() {
+  const { t } = useLanguage();
+
+  const renderMultiline = (key: string) =>
+    t(key)
+      .split('\n')
+      .map((line, idx, arr) => (
+        <span key={idx}>
+          {idx === 0 ? <strong>{line}</strong> : line}
+          {idx < arr.length - 1 && <br />}
+        </span>
+      ));
+
   return (
     <section id="waar-te-koop" className="verkooppunten-section">
       <div className="verkooppunten-inner">
         <header className="verkooppunten-header">
-          <p className="verkooppunten-tagline">Waar is Old Maastricht te koop?</p>
-          <h2 className="verkooppunten-title">Verkooppunten</h2>
+          <p className="verkooppunten-tagline">{t('where.title')}</p>
+          <h2 className="verkooppunten-title">{t('where.subtitle')}</h2>
         </header>
 
         <div className="verkooppunten-grid">
@@ -15,16 +30,14 @@ export default function WaarTeKoop() {
           <article className="verkooppunten-card">
             <div className="verkooppunten-image verkooppunten-image--maastricht" />
             <div className="verkooppunten-card-body">
-              <h3 className="verkooppunten-card-title">Maastricht</h3>
+              <h3 className="verkooppunten-card-title">
+                {t('where.card.maastricht.title')}
+              </h3>
               <p className="verkooppunten-card-subtitle">
                 Kaashandel Sauer Maastricht
               </p>
               <p className="verkooppunten-card-text">
-                <strong>Weekmarkt Maastricht</strong>
-                <br />
-                Dinsdag t/m vrijdag 10.00 – 17.00
-                <br />
-                Zondag 12.00 – 17.00
+                {renderMultiline('where.card.maastricht.text')}
               </p>
 
               {/* Google Maps knop – coördinaten Maastricht */}
@@ -34,7 +47,7 @@ export default function WaarTeKoop() {
                 rel="noopener noreferrer"
                 className="verkooppunten-button"
               >
-                Route via Google Maps
+                {t('where.card.button.route')}
               </a>
             </div>
           </article>
@@ -43,14 +56,14 @@ export default function WaarTeKoop() {
           <article className="verkooppunten-card">
             <div className="verkooppunten-image verkooppunten-image--sittard" />
             <div className="verkooppunten-card-body">
-              <h3 className="verkooppunten-card-title">Sittard</h3>
+              <h3 className="verkooppunten-card-title">
+                {t('where.card.sittard.title')}
+              </h3>
               <p className="verkooppunten-card-subtitle">
                 Kaashandel Sauer Sittard
               </p>
               <p className="verkooppunten-card-text">
-                <strong>Weekmarkt Sittard</strong>
-                <br />
-                Zaterdag 08.00 – 17.00
+                {renderMultiline('where.card.sittard.text')}
               </p>
 
               {/* Google Maps knop – Markt, 6131 EK Sittard */}
@@ -60,7 +73,7 @@ export default function WaarTeKoop() {
                 rel="noopener noreferrer"
                 className="verkooppunten-button"
               >
-                Route via Google Maps
+                {t('where.card.button.route')}
               </a>
             </div>
           </article>
@@ -69,15 +82,17 @@ export default function WaarTeKoop() {
           <article className="verkooppunten-card">
             <div className="verkooppunten-image verkooppunten-image--online" />
             <div className="verkooppunten-card-body">
-              <h3 className="verkooppunten-card-title">Webshop</h3>
+              <h3 className="verkooppunten-card-title">
+                {t('where.card.online.title')}
+              </h3>
               <p className="verkooppunten-card-text">
-                Koop Old Maastricht nu ook online via onze eigen webshop.
+                {t('where.card.online.text')}
               </p>
               <a
                 href="/shop"
                 className="verkooppunten-button verkooppunten-button--webshop"
               >
-                Webshop
+                {t('where.card.button.shop')}
               </a>
             </div>
           </article>

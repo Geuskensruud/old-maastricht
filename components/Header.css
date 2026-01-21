@@ -300,3 +300,50 @@
   align-items: center;
   gap: clamp(1rem, 2vw, 2rem);
 }
+
+/* ===== TAAL SWITCHER ===== */
+.lang-switch {
+  display: flex;
+  gap: 0.25rem;
+  margin-left: 0.75rem;
+  align-items: center;
+}
+
+.lang-btn {
+  border: 1px solid transparent;
+  background: transparent;
+  padding: 0.15rem 0.35rem;
+  border-radius: 999px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  transition: background-color 0.15s ease, border-color 0.15s ease,
+    transform 0.1s ease;
+}
+
+.lang-btn:hover {
+  background-color: rgba(255, 255, 255, 0.4);
+  transform: translateY(-1px);
+}
+
+.lang-btn--active {
+  border-color: #f3e0c2;
+  background-color: rgba(255, 255, 255, 0.65);
+}
+
+.lang-emoji {
+  font-size: 1.1rem;
+}
+
+/* Op mobiel iets compacter */
+@media (max-width: 768px) {
+  .lang-switch {
+    gap: 0.15rem;
+  }
+
+  .lang-emoji {
+    font-size: 1rem;
+  }
+}

@@ -1,19 +1,20 @@
+// components/OldMaastrichtInfo.tsx
+'use client';
+
 import Image from 'next/image';
 import './OldMaastrichtInfo.css';
+import { useLanguage } from '@/components/LanguageContext';
 
 export default function OldMaastrichtInfo() {
+  const { t } = useLanguage();
+
   return (
     <section id="over" className="oldmaastricht-info">
       {/* Linkerkolom */}
       <div className="column left">
-        <p className="overline">De meest rebelse kaas van Nederland</p>
-        <h2>Old Maastricht</h2>
-        <p>
-          Old Maastricht heeft een volle, pittige smaak en is rijk aan eiwitten en mineralen.
-          Old Maastricht is een veelzijdige kaas die zowel als snack, op brood of als ingrediënt
-          in gerechten kan worden genoten. Ontdek deze lokale delicatesse tijdens een bezoek aan
-          de prachtige stad Maastricht en geniet van de unieke smaak van Old Maastricht kaas!
-        </p>
+        <p className="overline">{t('over.overtitle')}</p>
+        <h2>{t('over.title')}</h2>
+        <p>{t('over.body')}</p>
       </div>
 
       {/* Rechterkolom met 4 features */}
@@ -27,10 +28,8 @@ export default function OldMaastrichtInfo() {
             className="feature-icon"
           />
           <div className="feature-text">
-            <h3>Nagerijpt in Zuid-Limburg</h3>
-            <p>
-              Old Maastricht is een natuurgerijpte oude kaas. Gerijpt op ouderwetse grenen planken.
-            </p>
+            <h3>{t('over.feature1.title')}</h3>
+            <p>{t('over.feature1.body')}</p>
           </div>
         </div>
 
@@ -43,10 +42,8 @@ export default function OldMaastrichtInfo() {
             className="feature-icon"
           />
           <div className="feature-text">
-            <h3>Verkrijgbaar bij</h3>
-            <p>
-              Old Maastricht is verkrijgbaar op de markt in Maastricht en Sittard.
-            </p>
+            <h3>{t('over.feature2.title')}</h3>
+            <p>{t('over.feature2.body')}</p>
           </div>
         </div>
 
@@ -59,11 +56,8 @@ export default function OldMaastrichtInfo() {
             className="feature-icon"
           />
           <div className="feature-text">
-            <h3>100% weidegangmelk</h3>
-            <p>
-              Onze koeien grazen minimaal 120 dagen per jaar en minimaal 6 uur per dag. Hierdoor
-              krijgen we de specifieke smaak van Old Maastricht.
-            </p>
+            <h3>{t('over.feature3.title')}</h3>
+            <p>{t('over.feature3.body')}</p>
           </div>
         </div>
 
@@ -76,10 +70,8 @@ export default function OldMaastrichtInfo() {
             className="feature-icon"
           />
           <div className="feature-text">
-            <h3>Volgens traditioneel proces</h3>
-            <p>
-              Volgens een eeuwenoud proces wordt Old Maastricht bereid en dat proef je.
-            </p>
+            <h3>{t('over.feature4.title')}</h3>
+            <p>{t('over.feature4.body')}</p>
           </div>
         </div>
       </div>
