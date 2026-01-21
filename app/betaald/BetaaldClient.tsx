@@ -3,9 +3,11 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useCart } from '@/components/CartContext';
 
 export default function BetaaldClient({ sessionId }: { sessionId: string }) {
   const router = useRouter();
+  const { clear } = useCart();
 
   // 1) Bestelling bevestigen + e-mail versturen
   useEffect(() => {
@@ -33,7 +35,12 @@ export default function BetaaldClient({ sessionId }: { sessionId: string }) {
     })();
   }, [sessionId]);
 
-  // 2) Na 15 seconden terug naar home
+  // 2) Mandje direct leegmaken zodra je op deze pagina komt
+  useEffect(() => {
+    clear();
+  }, [clear]);
+
+  // 3) Na 15 seconden terug naar home
   useEffect(() => {
     const timer = setTimeout(() => {
       router.push('/');
